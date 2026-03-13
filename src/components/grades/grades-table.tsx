@@ -1,5 +1,5 @@
 import { ModuleWithStats } from "@/types"
-import { calculateModuleAverage, calculateWeightedAverage, formatGrade } from "@/lib/utils/grade-calculations"
+import { calculateWeightedAverage, formatGrade } from "@/lib/utils/grade-calculations"
 import { getGradeColor } from "@/lib/utils/grade-colors"
 import { Badge } from "@/components/ui/badge"
 import { GradeFormDialog } from "./grade-form-dialog"

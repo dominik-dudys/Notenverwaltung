@@ -12,7 +12,6 @@ import {
 } from "recharts"
 import { SemesterStats } from "@/types"
 import { formatGrade } from "@/lib/utils/grade-calculations"
-import { getGradeChartColor } from "@/lib/utils/grade-colors"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface SemesterBarChartProps {
