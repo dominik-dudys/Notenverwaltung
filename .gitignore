@@ -19,6 +19,8 @@
 # misc
 .DS_Store
 *.pem
+.idea/
+.playwright-mcp/
 
 # debug
 npm-debug.log*
