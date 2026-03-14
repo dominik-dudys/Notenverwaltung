@@ -19,7 +19,7 @@ export default async function GradesPage() {
   const [{ data: allModules }, { data: userGrades }] = await Promise.all([
     supabase
       .from("modules")
-      .select("id, name, ects, semester, user_id")
+      .select("*")
       .order("semester", { ascending: true })
       .order("name", { ascending: true }),
     supabase
