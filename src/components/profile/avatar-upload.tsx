@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import Image from "next/image"
 import { createClient } from "@/lib/supabase/client"
 
 interface AvatarUploadProps {
@@ -69,7 +70,7 @@ export function AvatarUpload({ userId, avatarUrl, initials }: AvatarUploadProps)
         aria-label="Avatar hochladen"
       >
         {preview ? (
-          <img src={preview} alt="Avatar" className="w-full h-full object-cover" />
+          <Image src={preview} alt="Avatar" fill className="object-cover" />
         ) : (
           <span className="flex items-center justify-center w-full h-full text-2xl font-semibold text-muted-foreground">
             {initials}

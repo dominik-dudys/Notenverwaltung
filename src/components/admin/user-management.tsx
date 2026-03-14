@@ -79,7 +79,7 @@ export function UserManagement({ profiles, currentUserId }: UserManagementProps)
                   <Select
                     defaultValue={profile.role}
                     disabled={isSelf || isPending}
-                    onValueChange={(value) => handleRoleChange(profile.id, value)}
+                    onValueChange={(value) => handleRoleChange(profile.id!, value)}
                   >
                     <SelectTrigger size="sm">
                       <SelectValue />

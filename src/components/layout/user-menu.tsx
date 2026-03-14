@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { createClient } from "@/lib/supabase/client"
 import { User } from "@supabase/supabase-js"
 import { Button } from "@/components/ui/button"
@@ -63,7 +64,7 @@ export function UserMenu({ user, profile }: UserMenuProps) {
         aria-expanded={open}
       >
         {profile.avatar_url ? (
-          <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+          <Image src={profile.avatar_url} alt="Avatar" fill className="object-cover" />
         ) : (
           <span className="text-xs font-semibold text-muted-foreground">{initials}</span>
         )}
