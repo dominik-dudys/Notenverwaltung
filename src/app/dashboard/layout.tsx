@@ -16,11 +16,13 @@ export default async function DashboardLayout({
     redirect("/auth/login")
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .single()
+
+  console.log("[layout] user.id:", user.id, "profile:", profile, "error:", profileError)
 
   const isAdmin = profile?.role === "admin"
 
