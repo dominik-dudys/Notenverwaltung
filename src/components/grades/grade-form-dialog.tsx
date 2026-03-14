@@ -74,11 +74,13 @@ export function GradeFormDialog({ moduleId, grade, trigger }: GradeFormDialogPro
         })
         .eq("id", grade.id)
     } else {
+      const { data: { user } } = await supabase.auth.getUser()
       await supabase.from("grades").insert({
         module_id: moduleId,
         grade: values.grade,
         date: values.date,
         description: values.description || null,
+        user_id: user?.id,
       })
     }
 

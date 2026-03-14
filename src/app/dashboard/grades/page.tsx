@@ -9,8 +9,7 @@ import {
 import { AverageDisplay } from "@/components/grades/average-display"
 import { GradesOverviewChart } from "@/components/grades/grades-overview-chart"
 import { SemesterBarChart } from "@/components/grades/semester-bar-chart"
-import { ModuleCard } from "@/components/grades/module-card"
-import { ModuleFormDialog } from "@/components/grades/module-form-dialog"
+import { ModuleList } from "@/components/grades/module-list"
 import { Button } from "@/components/ui/button"
 
 export default async function GradesPage() {
@@ -20,7 +19,7 @@ export default async function GradesPage() {
   const { data: modulesRaw } = await supabase
     .from("modules")
     .select("*, grades(*)")
-    .eq("user_id", user!.id)
+    .eq("grades.user_id", user!.id)
     .order("semester", { ascending: true })
     .order("name", { ascending: true })
 
@@ -44,16 +43,9 @@ export default async function GradesPage() {
             Übersicht deiner Module und Noten
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/dashboard/grades/list">Alle Noten</Link>
-          </Button>
-          <ModuleFormDialog
-            trigger={
-              <Button size="sm">+ Modul erstellen</Button>
-            }
-          />
-        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/dashboard/grades/list">Alle Noten</Link>
+        </Button>
       </div>
 
       <AverageDisplay
@@ -72,22 +64,13 @@ export default async function GradesPage() {
 
       {modules.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
-          <p className="text-lg font-medium">Noch keine Module angelegt.</p>
-          <p className="text-sm mt-1">Erstelle dein erstes Modul, um zu beginnen.</p>
-          <ModuleFormDialog
-            trigger={
-              <Button className="mt-4">+ Modul erstellen</Button>
-            }
-          />
+          <p className="text-lg font-medium">Noch keine Module vorhanden.</p>
+          <p className="text-sm mt-1">Ein Admin muss zuerst Module anlegen.</p>
         </div>
       ) : (
         <div>
           <h2 className="text-lg font-semibold mb-3">Module</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {modules.map((module) => (
-              <ModuleCard key={module.id} module={module} />
-            ))}
-          </div>
+          <ModuleList modules={modules} />
         </div>
       )}
     </div>

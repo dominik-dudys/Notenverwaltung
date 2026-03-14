@@ -82,6 +82,7 @@ export type Database = {
           grade: number
           id: string
           module_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -90,6 +91,7 @@ export type Database = {
           grade: number
           id?: string
           module_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -98,6 +100,7 @@ export type Database = {
           grade?: number
           id?: string
           module_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {

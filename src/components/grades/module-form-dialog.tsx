@@ -62,8 +62,6 @@ export function ModuleFormDialog({ module, trigger }: ModuleFormDialogProps) {
   async function onSubmit(values: FormValues) {
     setLoading(true)
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
 
     if (module) {
       await supabase
@@ -75,7 +73,6 @@ export function ModuleFormDialog({ module, trigger }: ModuleFormDialogProps) {
         name: values.name,
         ects: values.ects,
         semester: values.semester,
-        user_id: user.id,
       })
     }
 

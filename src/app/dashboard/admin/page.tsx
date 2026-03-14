@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { TimetableUpload } from "@/components/timetable/timetable-upload"
 import { UserManagement } from "@/components/admin/user-management"
+import { ModuleManagement } from "@/components/admin/module-management"
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -17,10 +18,24 @@ export default async function AdminPage() {
 
   if (profile?.role !== "admin") redirect("/dashboard/grades")
 
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, email, role")
-    .order("email", { ascending: true })
+  const [{ data: profiles }, { data: modulesRaw }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, email, role")
+      .order("email", { ascending: true }),
+    supabase
+      .from("modules")
+      .select("*, grades(user_id)")
+      .order("semester", { ascending: true })
+      .order("name", { ascending: true }),
+  ])
+
+  const modules = (modulesRaw ?? []).map((m) => ({
+    ...m,
+    grades: [],
+    average: null,
+    totalGradeCount: (m.grades ?? []).length,
+  }))
 
   return (
     <div className="space-y-8">
@@ -34,6 +49,11 @@ export default async function AdminPage() {
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Stundenplan hochladen</h2>
         <TimetableUpload />
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">Module verwalten</h2>
+        <ModuleManagement modules={modules} />
       </div>
 
       <div className="space-y-3">
