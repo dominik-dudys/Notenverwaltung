@@ -9,17 +9,27 @@ export default async function GradesListPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: modulesRaw } = await supabase
-    .from("modules")
-    .select("*, grades(*)")
-    .eq("user_id", user!.id)
-    .order("semester", { ascending: true })
+  const [{ data: allModules }, { data: userGrades }] = await Promise.all([
+    supabase
+      .from("modules")
+      .select("id, name, ects, semester, user_id")
+      .order("semester", { ascending: true }),
+    supabase
+      .from("grades")
+      .select("*")
+      .eq("user_id", user!.id),
+  ])
 
-  const modules: ModuleWithStats[] = (modulesRaw ?? []).map((m) => ({
-    ...m,
-    grades: m.grades ?? [],
-    average: calculateModuleAverage(m.grades ?? []),
-  }))
+  const modules: ModuleWithStats[] = (allModules ?? [])
+    .map((m) => {
+      const grades = (userGrades ?? []).filter((g) => g.module_id === m.id)
+      return {
+        ...m,
+        grades,
+        average: calculateModuleAverage(grades),
+      }
+    })
+    .filter((m) => m.grades.length > 0)
 
   return (
     <div className="space-y-6">
