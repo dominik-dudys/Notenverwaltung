@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { TimetableUpload } from "@/components/timetable/timetable-upload"
+import { UserManagement } from "@/components/admin/user-management"
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -40,34 +41,7 @@ export default async function AdminPage() {
           <h2 className="text-lg font-semibold">Registrierte Nutzer</h2>
           <span className="text-sm text-muted-foreground">({profiles?.length ?? 0})</span>
         </div>
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted">
-              <tr>
-                <th className="text-left px-4 py-2 font-medium">E-Mail</th>
-                <th className="text-left px-4 py-2 font-medium">Rolle</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(profiles ?? []).map((p) => (
-                <tr key={p.id} className="border-t">
-                  <td className="px-4 py-2">{p.email}</td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        p.role === "admin"
-                          ? "bg-primary/10 text-primary"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {p.role}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <UserManagement profiles={profiles ?? []} currentUserId={user.id} />
       </div>
     </div>
   )

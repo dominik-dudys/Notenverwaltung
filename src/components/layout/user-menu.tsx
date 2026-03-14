@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { User } from "@supabase/supabase-js"
+import { Button } from "@/components/ui/button"
 
 interface ProfileData {
   role: string
@@ -77,21 +78,18 @@ export function UserMenu({ user, profile }: UserMenuProps) {
             </span>
           </div>
           <div className="py-1">
-            <Link
-              href="/dashboard/profile"
-              onClick={() => setOpen(false)}
-              className="block px-3 py-2 text-sm hover:bg-accent transition-colors"
-            >
-              Profil
-            </Link>
+            <Button asChild variant="ghost" size="sm" className="w-full justify-start">
+              <Link href="/dashboard/profile" onClick={() => setOpen(false)}>Profil</Link>
+            </Button>
             <hr className="my-1" />
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start"
               onClick={handleLogout}
-              className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
             >
               Abmelden
-            </button>
+            </Button>
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { DashboardNav } from "@/components/layout/dashboard-nav"
 import { UserMenu } from "@/components/layout/user-menu"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Separator } from "@/components/ui/separator"
 
 export default async function DashboardLayout({
@@ -33,15 +34,18 @@ export default async function DashboardLayout({
             <Separator orientation="vertical" className="h-5" />
             <DashboardNav isAdmin={isAdmin} />
           </div>
-          <UserMenu
-            user={user}
-            profile={{
-              role: profile?.role ?? "student",
-              first_name: profile?.first_name ?? null,
-              last_name: profile?.last_name ?? null,
-              avatar_url: profile?.avatar_url ?? null,
-            }}
-          />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <UserMenu
+              user={user}
+              profile={{
+                role: profile?.role ?? "student",
+                first_name: profile?.first_name ?? null,
+                last_name: profile?.last_name ?? null,
+                avatar_url: profile?.avatar_url ?? null,
+              }}
+            />
+          </div>
         </div>
       </header>
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6">
