@@ -34,3 +34,4 @@ Siehe .env.example
 - Niemals direkt in Produktions-Datenbank schreiben
 - Immer Migrations für Schemaänderungen
 - Microsoft Graph API braucht Azure App Registration
+- Prüfe bitte jedes mal, ob es Imports oder Funktionen gibt, die nicht benutzt werden

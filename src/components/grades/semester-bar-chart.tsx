@@ -9,7 +9,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-  Dot,
 } from "recharts"
 import { SemesterStats } from "@/types"
 import { formatGrade } from "@/lib/utils/grade-calculations"
