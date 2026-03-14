@@ -9,12 +9,20 @@ const navItems = [
   { href: "/dashboard/timetable", label: "Stundenplan" },
 ]
 
-export function DashboardNav() {
+interface DashboardNavProps {
+  isAdmin?: boolean
+}
+
+export function DashboardNav({ isAdmin = false }: DashboardNavProps) {
   const pathname = usePathname()
+
+  const items = isAdmin
+    ? [...navItems, { href: "/dashboard/admin", label: "Admin" }]
+    : navItems
 
   return (
     <nav className="flex gap-1">
-      {navItems.map((item) => (
+      {items.map((item) => (
         <Link
           key={item.href}
           href={item.href}

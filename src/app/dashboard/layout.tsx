@@ -16,6 +16,14 @@ export default async function DashboardLayout({
     redirect("/auth/login")
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single()
+
+  const isAdmin = profile?.role === "admin"
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-10 bg-background border-b">
@@ -23,7 +31,7 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-4">
             <span className="font-semibold text-sm">Studentenverwaltung</span>
             <Separator orientation="vertical" className="h-5" />
-            <DashboardNav />
+            <DashboardNav isAdmin={isAdmin} />
           </div>
           <UserMenu user={user} />
         </div>

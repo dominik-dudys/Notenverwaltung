@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          id: string
+          email: string
+          role: string
+        }
+        Insert: {
+          id: string
+          email: string
+          role?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          role?: string
+        }
+        Relationships: []
+      }
+      timetable_entries: {
+        Row: {
+          id: string
+          day: string
+          time_slot: string
+          subject: string
+          room: string | null
+          lecturer: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          day: string
+          time_slot: string
+          subject: string
+          room?: string | null
+          lecturer?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          day?: string
+          time_slot?: string
+          subject?: string
+          room?: string | null
+          lecturer?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       grades: {
         Row: {
           created_at: string | null
