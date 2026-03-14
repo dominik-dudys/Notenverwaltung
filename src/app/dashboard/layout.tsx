@@ -18,7 +18,7 @@ export default async function DashboardLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, first_name, last_name, avatar_url")
     .eq("id", user.id)
     .single()
 
@@ -33,7 +33,15 @@ export default async function DashboardLayout({
             <Separator orientation="vertical" className="h-5" />
             <DashboardNav isAdmin={isAdmin} />
           </div>
-          <UserMenu user={user} />
+          <UserMenu
+            user={user}
+            profile={{
+              role: profile?.role ?? "student",
+              first_name: profile?.first_name ?? null,
+              last_name: profile?.last_name ?? null,
+              avatar_url: profile?.avatar_url ?? null,
+            }}
+          />
         </div>
       </header>
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6">
