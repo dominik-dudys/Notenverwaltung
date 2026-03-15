@@ -14,73 +14,16 @@ export type Database = {
   }
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          id: string
-          email: string
-          role: string
-          first_name: string | null
-          last_name: string | null
-          study_program: string | null
-          avatar_url: string | null
-        }
-        Insert: {
-          id: string
-          email: string
-          role?: string
-          first_name?: string | null
-          last_name?: string | null
-          study_program?: string | null
-          avatar_url?: string | null
-        }
-        Update: {
-          id?: string
-          email?: string
-          role?: string
-          first_name?: string | null
-          last_name?: string | null
-          study_program?: string | null
-          avatar_url?: string | null
-        }
-        Relationships: []
-      }
-      timetable_entries: {
-        Row: {
-          id: string
-          day: string
-          time_slot: string
-          subject: string
-          room: string | null
-          lecturer: string | null
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          day: string
-          time_slot: string
-          subject: string
-          room?: string | null
-          lecturer?: string | null
-          created_at?: string | null
-        }
-        Update: {
-          id?: string
-          day?: string
-          time_slot?: string
-          subject?: string
-          room?: string | null
-          lecturer?: string | null
-          created_at?: string | null
-        }
-        Relationships: []
-      }
       grades: {
         Row: {
           created_at: string | null
           date: string | null
           description: string | null
+          ects: number | null
+          exam_name: string | null
           grade: number
           id: string
+          is_retake: boolean
           module_id: string
           user_id: string | null
         }
@@ -88,8 +31,11 @@ export type Database = {
           created_at?: string | null
           date?: string | null
           description?: string | null
+          ects?: number | null
+          exam_name?: string | null
           grade: number
           id?: string
+          is_retake?: boolean
           module_id: string
           user_id?: string | null
         }
@@ -97,8 +43,11 @@ export type Database = {
           created_at?: string | null
           date?: string | null
           description?: string | null
+          ects?: number | null
+          exam_name?: string | null
           grade?: number
           id?: string
+          is_retake?: boolean
           module_id?: string
           user_id?: string | null
         }
@@ -122,30 +71,75 @@ export type Database = {
       modules: {
         Row: {
           created_at: string | null
-          ects: number
           id: string
           name: string
           semester: number | null
           semester_id: string | null
+          subject_id: string | null
           user_id: string | null
         }
         Insert: {
           created_at?: string | null
-          ects: number
           id?: string
           name: string
           semester?: number | null
           semester_id?: string | null
+          subject_id?: string | null
           user_id?: string | null
         }
         Update: {
           created_at?: string | null
-          ects?: number
           id?: string
           name?: string
           semester?: number | null
           semester_id?: string | null
+          subject_id?: string | null
           user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modules_semester_id_fkey"
+            columns: ["semester_id"]
+            isOneToOne: false
+            referencedRelation: "semesters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "modules_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          role: string
+          study_program: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          email: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          role?: string
+          study_program?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          role?: string
+          study_program?: string | null
         }
         Relationships: []
       }
@@ -173,6 +167,57 @@ export type Database = {
           name?: string
           start_date?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      subjects: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      timetable_entries: {
+        Row: {
+          created_at: string | null
+          day: string
+          id: string
+          lecturer: string | null
+          room: string | null
+          subject: string
+          time_slot: string
+        }
+        Insert: {
+          created_at?: string | null
+          day: string
+          id?: string
+          lecturer?: string | null
+          room?: string | null
+          subject: string
+          time_slot: string
+        }
+        Update: {
+          created_at?: string | null
+          day?: string
+          id?: string
+          lecturer?: string | null
+          room?: string | null
+          subject?: string
+          time_slot?: string
         }
         Relationships: []
       }
@@ -204,11 +249,19 @@ export type Database = {
           total_ects: number | null
           weighted_average: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "modules_semester_id_fkey"
+            columns: ["semester_id"]
+            isOneToOne: false
+            referencedRelation: "semesters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
@@ -300,3 +353,43 @@ export type TablesUpdate<
       ? U
       : never
     : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const

@@ -2,8 +2,9 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import {
-  calculateModuleAverage,
+  calculateKlausurAverage,
   formatGrade,
+  getEffectiveGrades,
   getGradeLabel,
 } from "@/lib/utils/grade-calculations"
 import { getGradeColor } from "@/lib/utils/grade-colors"
@@ -19,30 +20,39 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { GradeFormDialog } from "@/components/grades/grade-form-dialog"
-import { ModuleFormDialog } from "@/components/grades/module-form-dialog"
+import { KlausurFormDialog } from "@/components/grades/module-form-dialog"
 
 interface Props {
   params: Promise<{ moduleId: string }>
 }
 
-export default async function ModuleDetailPage({ params }: Props) {
+export default async function KlausurDetailPage({ params }: Props) {
   const { moduleId } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: module } = await supabase
-    .from("modules")
-    .select("*, grades(*)")
-    .eq("id", moduleId)
-    .eq("user_id", user!.id)
-    .single()
+  const [{ data: klausur }, { data: profile }] = await Promise.all([
+    supabase
+      .from("modules")
+      .select("*, grades(*)")
+      .eq("id", moduleId)
+      .eq("user_id", user!.id)
+      .single(),
+    supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user!.id)
+      .single(),
+  ])
 
-  if (!module) notFound()
+  if (!klausur) notFound()
+  const isAdmin = profile?.role === "admin"
 
-  const grades = (module.grades ?? []).sort(
-    (a, b) => (b.date ?? "").localeCompare(a.date ?? "")
-  )
-  const avg = calculateModuleAverage(grades)
+  const grades = (klausur.grades ?? []).sort((a, b) => {
+    if (a.is_retake !== b.is_retake) return a.is_retake ? -1 : 1
+    return (b.date ?? "").localeCompare(a.date ?? "")
+  })
+  const avg = calculateKlausurAverage(grades)
   const passed = grades.filter((g) => g.grade <= 4.0)
 
   return (
@@ -55,19 +65,24 @@ export default async function ModuleDetailPage({ params }: Props) {
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold">{module.name}</h1>
+          <h1 className="text-2xl font-bold">{klausur.name}</h1>
           <div className="flex gap-2 mt-2">
-            <Badge variant="outline">Semester {module.semester ?? "–"}</Badge>
-            <Badge variant="secondary">{module.ects} ECTS</Badge>
+            <Badge variant="outline">Semester {klausur.semester ?? "–"}</Badge>
+            {getEffectiveGrades(grades).reduce((sum, g) => sum + (g.ects ?? 0), 0) > 0 && (
+              <Badge variant="secondary">
+                {getEffectiveGrades(grades).reduce((sum, g) => sum + (g.ects ?? 0), 0)} ECTS
+              </Badge>
+            )}
           </div>
         </div>
         <div className="flex gap-2">
-          <ModuleFormDialog
-            module={module}
-            trigger={<Button variant="outline" size="sm">Modul bearbeiten</Button>}
+          <KlausurFormDialog
+            klausur={klausur}
+            trigger={<Button variant="outline" size="sm">Klausur bearbeiten</Button>}
           />
           <GradeFormDialog
-            moduleId={module.id}
+            moduleId={klausur.id}
+            isAdmin={isAdmin}
             trigger={<Button size="sm">+ Note hinzufügen</Button>}
           />
         </div>
@@ -76,7 +91,7 @@ export default async function ModuleDetailPage({ params }: Props) {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6 text-center">
-            <p className="text-sm text-muted-foreground">Modul-Durchschnitt</p>
+            <p className="text-sm text-muted-foreground">Klausur-Durchschnitt</p>
             <p className={`text-3xl font-bold mt-1 ${getGradeColor(avg)}`}>
               {formatGrade(avg)}
             </p>
@@ -103,14 +118,16 @@ export default async function ModuleDetailPage({ params }: Props) {
         <h2 className="text-lg font-semibold mb-3">Noten</h2>
         {grades.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Noch keine Noten für dieses Modul eingetragen.
+            Noch keine Noten für diese Klausur eingetragen.
           </p>
         ) : (
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Klausur</TableHead>
                   <TableHead>Note</TableHead>
+                  <TableHead>ECTS</TableHead>
                   <TableHead>Datum</TableHead>
                   <TableHead>Beschreibung</TableHead>
                   <TableHead />
@@ -119,19 +136,29 @@ export default async function ModuleDetailPage({ params }: Props) {
               <TableBody>
                 {grades.map((grade) => (
                   <TableRow key={grade.id}>
-                    <TableCell>
-                      <span className={`font-semibold text-lg ${getGradeColor(grade.grade)}`}>
-                        {grade.grade.toFixed(1)}
-                      </span>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {grade.exam_name ?? "–"}
                     </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className={`font-semibold text-lg ${getGradeColor(grade.grade)}`}>
+                          {grade.grade.toFixed(1)}
+                        </span>
+                        {grade.is_retake && (
+                          <Badge className="text-xs bg-amber-500 hover:bg-amber-500 text-white">NKL</Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>{grade.ects ?? "–"}</TableCell>
                     <TableCell>{grade.date ?? "–"}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {grade.description ?? "–"}
                     </TableCell>
                     <TableCell>
                       <GradeFormDialog
-                        moduleId={module.id}
+                        moduleId={klausur.id}
                         grade={grade}
+                        isAdmin={isAdmin}
                         trigger={
                           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
                             ✎

@@ -4,14 +4,14 @@ import { Card, CardContent } from "@/components/ui/card"
 
 interface AverageDisplayProps {
   weightedAverage: number | null
-  totalModules: number
+  totalKlausuren: number
   totalEcts: number
   totalGrades: number
 }
 
 export function AverageDisplay({
   weightedAverage,
-  totalModules,
+  totalKlausuren,
   totalEcts,
   totalGrades,
 }: AverageDisplayProps) {
@@ -35,8 +35,8 @@ export function AverageDisplay({
       <Card>
         <CardContent className="pt-6">
           <div className="text-center">
-            <p className="text-sm text-muted-foreground">Module</p>
-            <p className="text-3xl font-bold mt-1">{totalModules}</p>
+            <p className="text-sm text-muted-foreground">Klausuren</p>
+            <p className="text-3xl font-bold mt-1">{totalKlausuren}</p>
           </div>
         </CardContent>
       </Card>

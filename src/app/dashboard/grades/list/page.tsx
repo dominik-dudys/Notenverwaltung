@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
-import { ModuleWithStats } from "@/types"
-import { calculateModuleAverage } from "@/lib/utils/grade-calculations"
+import { KlausurWithStats } from "@/types"
+import { calculateKlausurAverage } from "@/lib/utils/grade-calculations"
 import { GradesTable } from "@/components/grades/grades-table"
 import { Button } from "@/components/ui/button"
 
@@ -9,7 +9,7 @@ export default async function GradesListPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: allModules }, { data: userGrades }] = await Promise.all([
+  const [{ data: allKlausuren }, { data: userGrades }] = await Promise.all([
     supabase
       .from("modules")
       .select("*")
@@ -20,16 +20,16 @@ export default async function GradesListPage() {
       .eq("user_id", user!.id),
   ])
 
-  const modules: ModuleWithStats[] = (allModules ?? [])
+  const klausuren: KlausurWithStats[] = (allKlausuren ?? [])
     .map((m) => {
       const grades = (userGrades ?? []).filter((g) => g.module_id === m.id)
       return {
         ...m,
         grades,
-        average: calculateModuleAverage(grades),
+        average: calculateKlausurAverage(grades),
       }
     })
-    .filter((m) => m.grades.length > 0)
+    .filter((k) => k.grades.length > 0)
 
   return (
     <div className="space-y-6">
@@ -44,7 +44,7 @@ export default async function GradesListPage() {
       </div>
 
       <div className="rounded-md border">
-        <GradesTable modules={modules} />
+        <GradesTable klausuren={klausuren} />
       </div>
     </div>
   )

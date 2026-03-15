@@ -3,9 +3,10 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { ModuleWithStats } from "@/types"
-import { ModuleFormDialog } from "@/components/grades/module-form-dialog"
+import { KlausurWithStats, Modul } from "@/types"
+import { KlausurFormDialog } from "@/components/grades/module-form-dialog"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -15,82 +16,93 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 
-interface ModuleWithTotalGrades extends ModuleWithStats {
+interface KlausurWithTotalGrades extends KlausurWithStats {
   totalGradeCount: number
 }
 
-interface ModuleManagementProps {
-  modules: ModuleWithTotalGrades[]
+interface KlausurManagementProps {
+  klausuren: KlausurWithTotalGrades[]
+  module: Modul[]
 }
 
-export function ModuleManagement({ modules }: ModuleManagementProps) {
+export function KlausurManagement({ klausuren, module }: KlausurManagementProps) {
   const router = useRouter()
-  const [deleteTarget, setDeleteTarget] = useState<ModuleWithTotalGrades | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<KlausurWithTotalGrades | null>(null)
 
-  const sortedModules = [...modules].sort((a, b) => {
+  const sortedKlausuren = [...klausuren].sort((a, b) => {
     const semA = a.semester ?? 0
     const semB = b.semester ?? 0
     if (semA !== semB) return semA - semB
     return a.name.localeCompare(b.name)
   })
 
-  const grouped = new Map<number, ModuleWithTotalGrades[]>()
-  for (const mod of sortedModules) {
-    const sem = mod.semester ?? 0
+  const grouped = new Map<number, KlausurWithTotalGrades[]>()
+  for (const kl of sortedKlausuren) {
+    const sem = kl.semester ?? 0
     if (!grouped.has(sem)) grouped.set(sem, [])
-    grouped.get(sem)!.push(mod)
+    grouped.get(sem)!.push(kl)
   }
   const semesterKeys = [...grouped.keys()].sort((a, b) => a - b)
 
-  async function handleDelete(moduleId: string) {
+  const modulMap = new Map(module.map((m) => [m.id, m.name]))
+
+  async function handleDelete(klausurId: string) {
     const supabase = createClient()
-    await supabase.from("modules").delete().eq("id", moduleId)
+    await supabase.from("modules").delete().eq("id", klausurId)
     setDeleteTarget(null)
     router.refresh()
   }
 
-  function requestDelete(mod: ModuleWithTotalGrades) {
-    if (mod.totalGradeCount > 0) {
-      setDeleteTarget(mod)
+  function requestDelete(kl: KlausurWithTotalGrades) {
+    if (kl.totalGradeCount > 0) {
+      setDeleteTarget(kl)
     } else {
-      handleDelete(mod.id)
+      handleDelete(kl.id)
     }
   }
 
   return (
     <>
       <div className="flex justify-end mb-3">
-        <ModuleFormDialog
-          trigger={<Button size="sm">+ Modul erstellen</Button>}
+        <KlausurFormDialog
+          isAdmin
+          module={module}
+          trigger={<Button size="sm">+ Klausur erstellen</Button>}
         />
       </div>
 
-      {sortedModules.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-4 text-center">Noch keine Module vorhanden.</p>
+      {sortedKlausuren.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-4 text-center">Noch keine Klausuren vorhanden.</p>
       ) : (
         <div className="space-y-6">
           {semesterKeys.map((sem) => (
             <div key={sem} className="bg-muted/50 rounded-xl p-6">
               <h3 className="text-lg font-semibold mb-4">Semester {sem === 0 ? "—" : sem}</h3>
               <div className="rounded-md border divide-y bg-background">
-                {grouped.get(sem)!.map((mod) => (
-                  <div key={mod.id} className="flex items-center justify-between px-4 py-3">
-                    <div className="flex items-center gap-4">
-                      <span className="font-medium">{mod.name}</span>
-                      <span className="text-sm text-muted-foreground">{mod.ects} ECTS</span>
+                {grouped.get(sem)!.map((kl) => (
+                  <div key={kl.id} className="flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="font-medium">{kl.name}</span>
+                      {kl.subject_id && modulMap.has(kl.subject_id) && (
+                        <Badge variant="secondary" className="text-xs">
+                          {modulMap.get(kl.subject_id)}
+                        </Badge>
+                      )}
                       <span className="text-sm text-muted-foreground">
-                        {mod.totalGradeCount} {mod.totalGradeCount === 1 ? "Note" : "Noten"}
+                        {kl.totalGradeCount} {kl.totalGradeCount === 1 ? "Note" : "Noten"}
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <ModuleFormDialog
-                        module={mod}
+                      <KlausurFormDialog
+                        klausur={kl}
+                        isAdmin
+                        module={module}
                         trigger={<Button variant="outline" size="sm">Bearbeiten</Button>}
                       />
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => requestDelete(mod)}
+                        onClick={() => requestDelete(kl)}
                       >
                         Löschen
                       </Button>
@@ -106,9 +118,9 @@ export function ModuleManagement({ modules }: ModuleManagementProps) {
       <Dialog open={deleteTarget !== null} onOpenChange={(open: boolean) => { if (!open) setDeleteTarget(null) }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Modul löschen?</DialogTitle>
+            <DialogTitle>Klausur löschen?</DialogTitle>
             <DialogDescription>
-              Dieses Modul hat {deleteTarget?.totalGradeCount} eingetragene{" "}
+              Diese Klausur hat {deleteTarget?.totalGradeCount} eingetragene{" "}
               {deleteTarget?.totalGradeCount === 1 ? "Note" : "Noten"}. Beim Löschen werden alle Noten
               unwiderruflich entfernt.
             </DialogDescription>

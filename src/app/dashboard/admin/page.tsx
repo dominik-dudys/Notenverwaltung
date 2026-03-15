@@ -2,7 +2,8 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { TimetableUpload } from "@/components/timetable/timetable-upload"
 import { UserManagement } from "@/components/admin/user-management"
-import { ModuleManagement } from "@/components/admin/module-management"
+import { KlausurManagement } from "@/components/admin/module-management"
+import { ModulManagement } from "@/components/admin/subject-management"
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -18,7 +19,7 @@ export default async function AdminPage() {
 
   if (profile?.role !== "admin") redirect("/dashboard/grades")
 
-  const [{ data: profiles }, { data: modulesRaw }] = await Promise.all([
+  const [{ data: profiles }, { data: klausurenRaw }, { data: module }] = await Promise.all([
     supabase
       .from("profiles")
       .select("id, email, role")
@@ -28,9 +29,13 @@ export default async function AdminPage() {
       .select("*, grades(user_id)")
       .order("semester", { ascending: true })
       .order("name", { ascending: true }),
+    supabase
+      .from("subjects")
+      .select("*")
+      .order("sort_order", { ascending: true }),
   ])
 
-  const modules = (modulesRaw ?? []).map((m) => ({
+  const klausuren = (klausurenRaw ?? []).map((m) => ({
     ...m,
     grades: [],
     average: null,
@@ -53,7 +58,15 @@ export default async function AdminPage() {
 
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Module verwalten</h2>
-        <ModuleManagement modules={modules} />
+        <p className="text-sm text-muted-foreground">
+          Module gruppieren Klausuren, die über mehrere Semester gehen (z.B. &quot;Mathe 3&quot; → Statistik 1 + Statistik 2).
+        </p>
+        <ModulManagement module={module ?? []} />
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">Klausuren verwalten</h2>
+        <KlausurManagement klausuren={klausuren} module={module ?? []} />
       </div>
 
       <div className="space-y-3">

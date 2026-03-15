@@ -1,6 +1,6 @@
 "use client"
 
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts"
 import { Grade } from "@/types"
 import { getGradeLabel } from "@/lib/utils/grade-calculations"
 import { getGradeChartColor } from "@/lib/utils/grade-colors"
@@ -62,7 +62,6 @@ export function GradesOverviewChart({ grades }: GradesOverviewChartProps) {
                 <Cell key={index} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip formatter={(value: number) => [`${value} Note(n)`, ""]} />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>

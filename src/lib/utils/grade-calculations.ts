@@ -1,50 +1,65 @@
-import { Grade, ModuleWithStats, SemesterStats } from "@/types"
+import { Grade, KlausurWithStats, SemesterStats } from "@/types"
 
-export function calculateModuleAverage(grades: Grade[]): number | null {
-  if (grades.length === 0) return null
-  const sum = grades.reduce((acc, g) => acc + g.grade, 0)
-  return Math.round((sum / grades.length) * 10) / 10
+export function getEffectiveGrades(grades: Grade[]): Grade[] {
+  const hasRetake = grades.some((g) => g.is_retake)
+  return hasRetake ? grades.filter((g) => g.is_retake) : grades
+}
+
+export function calculateKlausurAverage(grades: Grade[]): number | null {
+  const scoredGrades = getEffectiveGrades(grades)
+  if (scoredGrades.length === 0) return null
+
+  const gradesWithEcts = scoredGrades.filter((g) => g.ects != null && g.ects > 0)
+  if (gradesWithEcts.length > 0) {
+    const weightedSum = gradesWithEcts.reduce((acc, g) => acc + g.grade * g.ects!, 0)
+    const totalEcts = gradesWithEcts.reduce((acc, g) => acc + g.ects!, 0)
+    return Math.round((weightedSum / totalEcts) * 10) / 10
+  }
+
+  const sum = scoredGrades.reduce((acc, g) => acc + g.grade, 0)
+  return Math.round((sum / scoredGrades.length) * 10) / 10
 }
 
 export function calculateWeightedAverage(
-  modules: Array<{ ects: number; grades: Grade[] }>
+  klausuren: Array<{ grades: Grade[] }>
 ): number | null {
-  const modulesWithGrades = modules.filter((m) => m.grades.length > 0)
-  if (modulesWithGrades.length === 0) return null
+  const klausurenWithGrades = klausuren.filter((k) => k.grades.length > 0)
+  if (klausurenWithGrades.length === 0) return null
 
-  let weightedSum = 0
-  let totalEcts = 0
+  const allGrades = klausurenWithGrades.flatMap((k) => getEffectiveGrades(k.grades))
+  const gradesWithEcts = allGrades.filter((g) => g.ects != null && g.ects > 0)
 
-  for (const mod of modulesWithGrades) {
-    const avg = calculateModuleAverage(mod.grades)
-    if (avg !== null) {
-      weightedSum += avg * mod.ects
-      totalEcts += mod.ects
-    }
+  if (gradesWithEcts.length > 0) {
+    const weightedSum = gradesWithEcts.reduce((acc, g) => acc + g.grade * g.ects!, 0)
+    const totalEcts = gradesWithEcts.reduce((acc, g) => acc + g.ects!, 0)
+    if (totalEcts === 0) return null
+    return Math.round((weightedSum / totalEcts) * 100) / 100
   }
 
-  if (totalEcts === 0) return null
-  return Math.round((weightedSum / totalEcts) * 100) / 100
+  if (allGrades.length === 0) return null
+  const sum = allGrades.reduce((acc, g) => acc + g.grade, 0)
+  return Math.round((sum / allGrades.length) * 100) / 100
 }
 
-export function groupBySemester(modules: ModuleWithStats[]): SemesterStats[] {
-  const semesterMap = new Map<number, ModuleWithStats[]>()
+export function groupBySemester(klausuren: KlausurWithStats[]): SemesterStats[] {
+  const semesterMap = new Map<number, KlausurWithStats[]>()
 
-  for (const mod of modules) {
-    const sem = mod.semester ?? 0
+  for (const kl of klausuren) {
+    const sem = kl.semester ?? 0
     if (!semesterMap.has(sem)) {
       semesterMap.set(sem, [])
     }
-    semesterMap.get(sem)!.push(mod)
+    semesterMap.get(sem)!.push(kl)
   }
 
   const result: SemesterStats[] = []
-  for (const [semester, mods] of semesterMap.entries()) {
+  for (const [semester, kls] of semesterMap.entries()) {
+    const totalEcts = kls.flatMap((k) => getEffectiveGrades(k.grades)).reduce((sum, g) => sum + (g.ects ?? 0), 0)
     result.push({
       semester,
-      modules: mods,
-      weightedAverage: calculateWeightedAverage(mods),
-      totalEcts: mods.reduce((sum, m) => sum + m.ects, 0),
+      klausuren: kls,
+      weightedAverage: calculateWeightedAverage(kls),
+      totalEcts,
     })
   }
 

@@ -6,9 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { Module } from "@/types"
+import { Klausur, Modul } from "@/types"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
@@ -31,21 +30,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 
 const schema = z.object({
   name: z.string().min(1, "Name ist erforderlich"),
-  ects: z.number().int().min(1).max(30),
   semester: z.number().int().min(1).max(12),
+  subject_id: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof schema>
 
-interface ModuleFormDialogProps {
-  module?: Module
+interface KlausurFormDialogProps {
+  klausur?: Klausur
   trigger?: React.ReactElement
+  isAdmin?: boolean
+  module?: Modul[]
 }
 
-export function ModuleFormDialog({ module, trigger }: ModuleFormDialogProps) {
+export function KlausurFormDialog({ klausur, trigger, isAdmin, module }: KlausurFormDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -53,9 +55,9 @@ export function ModuleFormDialog({ module, trigger }: ModuleFormDialogProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: module?.name ?? "",
-      ects: module?.ects ?? 5,
-      semester: module?.semester ?? 1,
+      name: klausur?.name ?? "",
+      semester: klausur?.semester ?? 1,
+      subject_id: klausur?.subject_id ?? undefined,
     },
   })
 
@@ -63,17 +65,16 @@ export function ModuleFormDialog({ module, trigger }: ModuleFormDialogProps) {
     setLoading(true)
     const supabase = createClient()
 
-    if (module) {
-      await supabase
-        .from("modules")
-        .update({ name: values.name, ects: values.ects, semester: values.semester })
-        .eq("id", module.id)
+    const payload = {
+      name: values.name,
+      semester: values.semester,
+      ...(isAdmin && { subject_id: values.subject_id || null }),
+    }
+
+    if (klausur) {
+      await supabase.from("modules").update(payload).eq("id", klausur.id)
     } else {
-      await supabase.from("modules").insert({
-        name: values.name,
-        ects: values.ects,
-        semester: values.semester,
-      })
+      await supabase.from("modules").insert(payload)
     }
 
     setLoading(false)
@@ -83,7 +84,7 @@ export function ModuleFormDialog({ module, trigger }: ModuleFormDialogProps) {
 
   const triggerEl = trigger ?? (
     <Button variant="outline" size="sm">
-      {module ? "Bearbeiten" : "Modul erstellen"}
+      {klausur ? "Bearbeiten" : "Klausur erstellen"}
     </Button>
   )
 
@@ -92,7 +93,7 @@ export function ModuleFormDialog({ module, trigger }: ModuleFormDialogProps) {
       <DialogTrigger render={triggerEl} />
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{module ? "Modul bearbeiten" : "Neues Modul"}</DialogTitle>
+          <DialogTitle>{klausur ? "Klausur bearbeiten" : "Neue Klausur"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -101,53 +102,62 @@ export function ModuleFormDialog({ module, trigger }: ModuleFormDialogProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Modulname</FormLabel>
+                  <FormLabel>Klausurname</FormLabel>
                   <FormControl>
-                    <Input placeholder="z.B. Mathematik 1" {...field} />
+                    <Input placeholder="z.B. Statistik 1" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="ects"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ECTS</FormLabel>
+            <FormField
+              control={form.control}
+              name="semester"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Semester</FormLabel>
+                  <Select
+                    value={String(field.value)}
+                    onValueChange={(v) => field.onChange(Number(v))}
+                  >
                     <FormControl>
-                      <Input
-                        type="number"
-                        min={1}
-                        max={30}
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                      />
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <SelectContent>
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((s) => (
+                        <SelectItem key={s} value={String(s)}>
+                          {s}. Semester
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {isAdmin && module && module.length > 0 && (
               <FormField
                 control={form.control}
-                name="semester"
+                name="subject_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Semester</FormLabel>
+                    <FormLabel>Modul (optional)</FormLabel>
                     <Select
-                      value={String(field.value)}
-                      onValueChange={(v) => field.onChange(Number(v))}
+                      value={field.value ?? "none"}
+                      onValueChange={(v) => field.onChange(v === "none" ? undefined : v)}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Kein Modul" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Array.from({ length: 12 }, (_, i) => i + 1).map((s) => (
-                          <SelectItem key={s} value={String(s)}>
-                            {s}. Semester
+                        <SelectItem value="none">Kein Modul</SelectItem>
+                        {module.map((m) => (
+                          <SelectItem key={m.id} value={m.id}>
+                            {m.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -156,7 +166,7 @@ export function ModuleFormDialog({ module, trigger }: ModuleFormDialogProps) {
                   </FormItem>
                 )}
               />
-            </div>
+            )}
             <div className="flex justify-end gap-2">
               <Button
                 type="button"

@@ -1,22 +1,30 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
-import { ModuleWithStats } from "@/types"
+import { KlausurWithStats } from "@/types"
 import {
-  calculateModuleAverage,
+  calculateKlausurAverage,
   calculateWeightedAverage,
+  getEffectiveGrades,
   groupBySemester,
 } from "@/lib/utils/grade-calculations"
 import { AverageDisplay } from "@/components/grades/average-display"
 import { GradesOverviewChart } from "@/components/grades/grades-overview-chart"
 import { SemesterBarChart } from "@/components/grades/semester-bar-chart"
-import { ModuleList } from "@/components/grades/module-list"
+import { KlausurList } from "@/components/grades/module-list"
 import { Button } from "@/components/ui/button"
 
 export default async function GradesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: allModules }, { data: userGrades }] = await Promise.all([
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user!.id)
+    .single()
+  const isAdmin = profile?.role === "admin"
+
+  const [{ data: allKlausuren }, { data: userGrades }] = await Promise.all([
     supabase
       .from("modules")
       .select("*")
@@ -28,19 +36,19 @@ export default async function GradesPage() {
       .eq("user_id", user!.id),
   ])
 
-  const modules: ModuleWithStats[] = (allModules ?? []).map((m) => {
+  const klausuren: KlausurWithStats[] = (allKlausuren ?? []).map((m) => {
     const grades = (userGrades ?? []).filter((g) => g.module_id === m.id)
     return {
       ...m,
       grades,
-      average: calculateModuleAverage(grades),
+      average: calculateKlausurAverage(grades),
     }
   })
 
-  const allGrades = modules.flatMap((m) => m.grades)
-  const weightedAverage = calculateWeightedAverage(modules)
-  const totalEcts = modules.reduce((sum, m) => sum + m.ects, 0)
-  const semesters = groupBySemester(modules)
+  const allGrades = klausuren.flatMap((k) => k.grades)
+  const weightedAverage = calculateWeightedAverage(klausuren)
+  const totalEcts = klausuren.flatMap((k) => getEffectiveGrades(k.grades)).reduce((sum, g) => sum + (g.ects ?? 0), 0)
+  const semesters = groupBySemester(klausuren)
 
   return (
     <div className="space-y-6">
@@ -48,7 +56,7 @@ export default async function GradesPage() {
         <div>
           <h1 className="text-2xl font-bold">Noten</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Übersicht deiner Module und Noten
+            Übersicht deiner Klausuren und Noten
           </p>
         </div>
         <Button asChild variant="outline" size="sm">
@@ -58,27 +66,25 @@ export default async function GradesPage() {
 
       <AverageDisplay
         weightedAverage={weightedAverage}
-        totalModules={modules.length}
+        totalKlausuren={klausuren.length}
         totalEcts={totalEcts}
         totalGrades={allGrades.length}
       />
 
-      {allGrades.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <GradesOverviewChart grades={allGrades} />
-          <SemesterBarChart semesters={semesters} />
-        </div>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <GradesOverviewChart grades={allGrades} />
+        <SemesterBarChart semesters={semesters} />
+      </div>
 
-      {modules.length === 0 ? (
+      {klausuren.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
-          <p className="text-lg font-medium">Noch keine Module vorhanden.</p>
-          <p className="text-sm mt-1">Ein Admin muss zuerst Module anlegen.</p>
+          <p className="text-lg font-medium">Noch keine Klausuren vorhanden.</p>
+          <p className="text-sm mt-1">Ein Admin muss zuerst Klausuren anlegen.</p>
         </div>
       ) : (
         <div>
-          <h2 className="text-lg font-semibold mb-3">Module</h2>
-          <ModuleList modules={modules} />
+          <h2 className="text-lg font-semibold mb-3">Klausuren</h2>
+          <KlausurList klausuren={klausuren} isAdmin={isAdmin} />
         </div>
       )}
     </div>
