@@ -12,6 +12,7 @@ import { GradesOverviewChart } from "@/components/grades/grades-overview-chart"
 import { SemesterBarChart } from "@/components/grades/semester-bar-chart"
 import { KlausurList } from "@/components/grades/module-list"
 import { Button } from "@/components/ui/button"
+import { GradeImportDialog } from "@/components/grades/grade-import-dialog"
 
 export default async function GradesPage() {
   const supabase = await createClient()
@@ -59,9 +60,12 @@ export default async function GradesPage() {
             Übersicht deiner Klausuren und Noten
           </p>
         </div>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/dashboard/grades/list">Alle Noten</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <GradeImportDialog klausuren={allKlausuren ?? []} />
+          <Button asChild variant="outline" size="sm">
+            <Link href="/dashboard/grades/list">Alle Noten</Link>
+          </Button>
+        </div>
       </div>
 
       <AverageDisplay
