@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/dashboard/grades", label: "Noten" },
-  { href: "/dashboard/timetable", label: "Stundenplan" },
 ]
 
 interface DashboardNavProps {

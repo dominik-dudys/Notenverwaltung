@@ -191,36 +191,6 @@ export type Database = {
         }
         Relationships: []
       }
-      timetable_entries: {
-        Row: {
-          created_at: string | null
-          day: string
-          id: string
-          lecturer: string | null
-          room: string | null
-          subject: string
-          time_slot: string
-        }
-        Insert: {
-          created_at?: string | null
-          day: string
-          id?: string
-          lecturer?: string | null
-          room?: string | null
-          subject: string
-          time_slot: string
-        }
-        Update: {
-          created_at?: string | null
-          day?: string
-          id?: string
-          lecturer?: string | null
-          room?: string | null
-          subject?: string
-          time_slot?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       module_averages: {

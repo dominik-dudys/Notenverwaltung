@@ -17,10 +17,10 @@ export default async function HomePage() {
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold tracking-tight">Studentenverwaltung</h1>
         <p className="text-muted-foreground mt-2">
-          Verwalte deine Noten und deinen Stundenplan an einem Ort.
+          Verwalte deine Noten an einem Ort.
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl mb-10">
+      <div className="grid grid-cols-1 gap-6 w-full max-w-2xl mb-10">
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle>Notenverwaltung</CardTitle>
@@ -33,21 +33,6 @@ export default async function HomePage() {
               <li>Gewichteter Gesamtdurchschnitt</li>
               <li>Semester- und Modulübersicht</li>
               <li>Charts & Statistiken</li>
-            </ul>
-          </CardContent>
-        </Card>
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle>Stundenplan</CardTitle>
-            <CardDescription>
-              Dein Stundenplan direkt aus dem FH OneDrive.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-              <li>Excel-Import via Microsoft Graph</li>
-              <li>Aktuelle Stundenplandaten</li>
-              <li>Wochenübersicht</li>
             </ul>
           </CardContent>
         </Card>

@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { TimetableUpload } from "@/components/timetable/timetable-upload"
 import { UserManagement } from "@/components/admin/user-management"
 import { KlausurManagement } from "@/components/admin/module-management"
 import { ModulManagement } from "@/components/admin/subject-management"
@@ -47,13 +46,8 @@ export default async function AdminPage() {
       <div>
         <h1 className="text-2xl font-bold">Admin</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Nutzerverwaltung und Stundenplan-Upload
+          Nutzerverwaltung und Modulverwaltung
         </p>
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Stundenplan hochladen</h2>
-        <TimetableUpload />
       </div>
 
       <div className="space-y-3">
