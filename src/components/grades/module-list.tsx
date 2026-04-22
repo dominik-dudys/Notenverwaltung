@@ -16,7 +16,6 @@ import {
 
 interface KlausurListProps {
   semesters: SemesterStats[]
-  isAdmin?: boolean
 }
 
 function ChevronIcon({ open }: { open: boolean }) {
@@ -33,7 +32,7 @@ function ChevronIcon({ open }: { open: boolean }) {
   )
 }
 
-export function KlausurList({ semesters, isAdmin }: KlausurListProps) {
+export function KlausurList({ semesters }: KlausurListProps) {
   const maxSemester = semesters.length > 0 ? Math.max(...semesters.map((s) => s.semester)) : -1
   const [openSemesters, setOpenSemesters] = useState<Set<number>>(new Set([maxSemester]))
   const [selectedKlausur, setSelectedKlausur] = useState<KlausurWithStats | null>(null)
@@ -119,7 +118,7 @@ export function KlausurList({ semesters, isAdmin }: KlausurListProps) {
                             <td className="px-3 py-2.5 text-right">
                               <GradeFormDialog
                                 moduleId={kl.id}
-                                isAdmin={isAdmin}
+                                moduleEcts={kl.ects}
                                 trigger={
                                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
                                     + Note
@@ -203,8 +202,8 @@ export function KlausurList({ semesters, isAdmin }: KlausurListProps) {
                             <td className="px-3 py-2 text-right">
                               <GradeFormDialog
                                 moduleId={selectedKlausur.id}
+                                moduleEcts={selectedKlausur.ects}
                                 grade={grade}
-                                isAdmin={isAdmin}
                                 trigger={
                                   <Button variant="ghost" size="sm">Bearbeiten</Button>
                                 }
@@ -222,7 +221,7 @@ export function KlausurList({ semesters, isAdmin }: KlausurListProps) {
               <div className="flex justify-between pt-2">
                 <GradeFormDialog
                   moduleId={selectedKlausur.id}
-                  isAdmin={isAdmin}
+                  moduleEcts={selectedKlausur.ects}
                   trigger={
                     <Button size="sm">+ Note hinzufügen</Button>
                   }

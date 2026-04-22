@@ -10,10 +10,9 @@ import { KlausurFormDialog } from "./module-form-dialog"
 
 interface KlausurCardProps {
   klausur: KlausurWithStats
-  isAdmin?: boolean
 }
 
-export function KlausurCard({ klausur, isAdmin }: KlausurCardProps) {
+export function KlausurCard({ klausur }: KlausurCardProps) {
   const avg = calculateKlausurAverage(klausur.grades)
 
   return (
@@ -59,7 +58,7 @@ export function KlausurCard({ klausur, isAdmin }: KlausurCardProps) {
         <div className="mt-auto">
           <GradeFormDialog
             moduleId={klausur.id}
-            isAdmin={isAdmin}
+            moduleEcts={klausur.ects}
             trigger={
               <Button variant="outline" size="sm" className="w-full">
                 + Note hinzufügen

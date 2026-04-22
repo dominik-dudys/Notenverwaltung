@@ -31,22 +31,14 @@ export default async function KlausurDetailPage({ params }: Props) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: klausur }, { data: profile }] = await Promise.all([
-    supabase
-      .from("modules")
-      .select("*, grades(*)")
-      .eq("id", moduleId)
-      .eq("user_id", user!.id)
-      .single(),
-    supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user!.id)
-      .single(),
-  ])
+  const { data: klausur } = await supabase
+    .from("modules")
+    .select("*, grades(*)")
+    .eq("id", moduleId)
+    .eq("user_id", user!.id)
+    .single()
 
   if (!klausur) notFound()
-  const isAdmin = profile?.role === "admin"
 
   const grades = (klausur.grades ?? []).sort((a, b) => {
     if (a.is_retake !== b.is_retake) return a.is_retake ? -1 : 1
@@ -82,7 +74,7 @@ export default async function KlausurDetailPage({ params }: Props) {
           />
           <GradeFormDialog
             moduleId={klausur.id}
-            isAdmin={isAdmin}
+            moduleEcts={klausur.ects}
             trigger={<Button size="sm">+ Note hinzufügen</Button>}
           />
         </div>
@@ -157,8 +149,8 @@ export default async function KlausurDetailPage({ params }: Props) {
                     <TableCell>
                       <GradeFormDialog
                         moduleId={klausur.id}
+                        moduleEcts={klausur.ects}
                         grade={grade}
-                        isAdmin={isAdmin}
                         trigger={
                           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
                             ✎

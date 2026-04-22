@@ -65,13 +65,17 @@ export function GradeImportDialog({ klausuren }: GradeImportDialogProps) {
     const { data: { user } } = await supabase.auth.getUser()
 
     await supabase.from("grades").insert(
-      selected.map((r) => ({
-        module_id: r.moduleId,
-        grade: r.grade,
-        date: r.date,
-        user_id: user?.id,
-        is_retake: false,
-      }))
+      selected.map((r) => {
+        const klausur = klausuren.find((k) => k.id === r.moduleId)
+        return {
+          module_id: r.moduleId,
+          grade: r.grade,
+          date: r.date,
+          user_id: user?.id,
+          is_retake: false,
+          ...(klausur?.ects != null && { ects: klausur.ects }),
+        }
+      })
     )
 
     setLoading(false)

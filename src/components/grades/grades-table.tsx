@@ -93,6 +93,7 @@ export function GradesTable({ klausuren }: GradesTableProps) {
                     <TableCell>
                       <GradeFormDialog
                         moduleId={entry.module_id}
+                        moduleEcts={entry.klausur.ects}
                         grade={entry}
                         trigger={
                           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">

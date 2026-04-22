@@ -17,13 +17,6 @@ export default async function GradesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user!.id)
-    .single()
-  const isAdmin = profile?.role === "admin"
-
   const [{ data: allKlausuren }, { data: userGrades }] = await Promise.all([
     supabase
       .from("modules")
@@ -84,7 +77,7 @@ export default async function GradesPage() {
       ) : (
         <div>
           <h2 className="text-lg font-semibold mb-3">Klausuren</h2>
-          <KlausurList semesters={semesters} isAdmin={isAdmin} />
+          <KlausurList semesters={semesters} />
         </div>
       )}
     </div>

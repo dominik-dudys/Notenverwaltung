@@ -71,6 +71,7 @@ export type Database = {
       modules: {
         Row: {
           created_at: string | null
+          ects: number | null
           id: string
           name: string
           semester: number | null
@@ -80,6 +81,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          ects?: number | null
           id?: string
           name: string
           semester?: number | null
@@ -89,6 +91,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          ects?: number | null
           id?: string
           name?: string
           semester?: number | null
@@ -191,6 +194,36 @@ export type Database = {
         }
         Relationships: []
       }
+      timetable_entries: {
+        Row: {
+          created_at: string | null
+          day: string
+          id: string
+          lecturer: string | null
+          room: string | null
+          subject: string
+          time_slot: string
+        }
+        Insert: {
+          created_at?: string | null
+          day: string
+          id?: string
+          lecturer?: string | null
+          room?: string | null
+          subject: string
+          time_slot: string
+        }
+        Update: {
+          created_at?: string | null
+          day?: string
+          id?: string
+          lecturer?: string | null
+          room?: string | null
+          subject?: string
+          time_slot?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       module_averages: {
@@ -243,6 +276,7 @@ export type Database = {
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
