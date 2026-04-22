@@ -83,7 +83,7 @@ export function GradesTable({ klausuren }: GradesTableProps) {
                     <TableCell>{entry.ects ?? "–"}</TableCell>
                     <TableCell>
                       <span className={`font-semibold ${getGradeColor(entry.grade)}`}>
-                        {entry.grade.toFixed(1)}
+                        {formatGrade(entry.grade)}
                       </span>
                     </TableCell>
                     <TableCell>{entry.date ?? "–"}</TableCell>

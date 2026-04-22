@@ -142,7 +142,7 @@ export function GradeFormDialog({ moduleId, grade, trigger, isAdmin }: GradeForm
                     <SelectContent>
                       {VALID_GRADES.map((g) => (
                         <SelectItem key={g} value={String(g)}>
-                          {g.toFixed(1)}
+                          {g === 0 ? "BE" : g.toFixed(1)}
                         </SelectItem>
                       ))}
                     </SelectContent>

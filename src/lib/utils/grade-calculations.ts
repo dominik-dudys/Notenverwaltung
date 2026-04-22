@@ -2,7 +2,8 @@ import { Grade, KlausurWithStats, SemesterStats } from "@/types"
 
 export function getEffectiveGrades(grades: Grade[]): Grade[] {
   const hasRetake = grades.some((g) => g.is_retake)
-  return hasRetake ? grades.filter((g) => g.is_retake) : grades
+  const filtered = hasRetake ? grades.filter((g) => g.is_retake) : grades
+  return filtered.filter((g) => g.grade !== 0)
 }
 
 export function calculateKlausurAverage(grades: Grade[]): number | null {
@@ -67,6 +68,7 @@ export function groupBySemester(klausuren: KlausurWithStats[]): SemesterStats[] 
 }
 
 export function getGradeLabel(grade: number): string {
+  if (grade === 0) return "Bestanden"
   if (grade <= 1.5) return "Sehr gut"
   if (grade <= 2.5) return "Gut"
   if (grade <= 3.5) return "Befriedigend"
@@ -76,5 +78,6 @@ export function getGradeLabel(grade: number): string {
 
 export function formatGrade(grade: number | null): string {
   if (grade === null) return "–"
+  if (grade === 0) return "BE"
   return grade.toFixed(1)
 }

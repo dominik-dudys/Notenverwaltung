@@ -142,7 +142,7 @@ export default async function KlausurDetailPage({ params }: Props) {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className={`font-semibold text-lg ${getGradeColor(grade.grade)}`}>
-                          {grade.grade.toFixed(1)}
+                          {formatGrade(grade.grade)}
                         </span>
                         {grade.is_retake && (
                           <Badge className="text-xs bg-amber-500 hover:bg-amber-500 text-white">NKL</Badge>
