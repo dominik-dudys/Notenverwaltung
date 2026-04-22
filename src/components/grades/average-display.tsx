@@ -1,6 +1,5 @@
 import { getGradeColor } from "@/lib/utils/grade-colors"
 import { formatGrade, getGradeLabel } from "@/lib/utils/grade-calculations"
-import { Card, CardContent } from "@/components/ui/card"
 
 interface AverageDisplayProps {
   weightedAverage: number | null
@@ -16,46 +15,21 @@ export function AverageDisplay({
   totalGrades,
 }: AverageDisplayProps) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">Gesamtdurchschnitt</p>
-            <p className={`text-3xl font-bold mt-1 ${getGradeColor(weightedAverage)}`}>
-              {formatGrade(weightedAverage)}
-            </p>
-            {weightedAverage !== null && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {getGradeLabel(weightedAverage)}
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">Klausuren</p>
-            <p className="text-3xl font-bold mt-1">{totalKlausuren}</p>
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">Gesamt-ECTS</p>
-            <p className="text-3xl font-bold mt-1">{totalEcts}</p>
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">Noten</p>
-            <p className="text-3xl font-bold mt-1">{totalGrades}</p>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="flex items-center gap-2 sm:gap-6 px-4 py-3 rounded-lg border bg-card flex-wrap">
+      <div className="flex items-center gap-3">
+        <span className={`text-3xl font-bold ${getGradeColor(weightedAverage)}`}>
+          {formatGrade(weightedAverage)}
+        </span>
+        {weightedAverage !== null && (
+          <span className="text-sm text-muted-foreground">{getGradeLabel(weightedAverage)}</span>
+        )}
+      </div>
+      <div className="h-5 w-px bg-border hidden sm:block" />
+      <span className="text-sm text-muted-foreground">{totalKlausuren} Klausuren</span>
+      <div className="h-5 w-px bg-border hidden sm:block" />
+      <span className="text-sm text-muted-foreground">{totalEcts} ECTS</span>
+      <div className="h-5 w-px bg-border hidden sm:block" />
+      <span className="text-sm text-muted-foreground">{totalGrades} Noten</span>
     </div>
   )
 }

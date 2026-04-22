@@ -8,8 +8,7 @@ import {
   groupBySemester,
 } from "@/lib/utils/grade-calculations"
 import { AverageDisplay } from "@/components/grades/average-display"
-import { GradesOverviewChart } from "@/components/grades/grades-overview-chart"
-import { SemesterBarChart } from "@/components/grades/semester-bar-chart"
+import { CollapsibleCharts } from "@/components/grades/collapsible-charts"
 import { KlausurList } from "@/components/grades/module-list"
 import { Button } from "@/components/ui/button"
 import { GradeImportDialog } from "@/components/grades/grade-import-dialog"
@@ -52,7 +51,7 @@ export default async function GradesPage() {
   const semesters = groupBySemester(klausuren)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Noten</h1>
@@ -75,10 +74,7 @@ export default async function GradesPage() {
         totalGrades={allGrades.length}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <GradesOverviewChart grades={allGrades} />
-        <SemesterBarChart semesters={semesters} />
-      </div>
+      <CollapsibleCharts grades={allGrades} semesters={semesters} />
 
       {klausuren.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
@@ -88,7 +84,7 @@ export default async function GradesPage() {
       ) : (
         <div>
           <h2 className="text-lg font-semibold mb-3">Klausuren</h2>
-          <KlausurList klausuren={klausuren} isAdmin={isAdmin} />
+          <KlausurList semesters={semesters} isAdmin={isAdmin} />
         </div>
       )}
     </div>
