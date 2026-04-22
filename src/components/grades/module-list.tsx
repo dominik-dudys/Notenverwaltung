@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Grade, SemesterStats } from "@/types"
+import { Grade, KlausurWithStats, SemesterStats } from "@/types"
 import { formatGrade, getEffectiveGrades } from "@/lib/utils/grade-calculations"
 import { getGradeColor } from "@/lib/utils/grade-colors"
 import { GradeFormDialog } from "@/components/grades/grade-form-dialog"
