@@ -95,7 +95,7 @@ export function KlausurList({ semesters }: KlausurListProps) {
                     </thead>
                     <tbody className="divide-y">
                       {sem.klausuren.map((kl) => {
-                        const ects = getEffectiveGrades(kl.grades).reduce((sum, g) => sum + (g.ects ?? 0), 0)
+                        const ects = kl.ects ?? 0
                         return (
                           <tr key={kl.id} className="hover:bg-muted/40 transition-colors">
                             <td className="px-4 py-2.5">
@@ -147,9 +147,9 @@ export function KlausurList({ semesters }: KlausurListProps) {
                 <DialogTitle className="text-xl">{selectedKlausur.name}</DialogTitle>
                 <div className="flex gap-2 mt-1">
                   <Badge variant="secondary">{selectedKlausur.semester}. Semester</Badge>
-                  {getEffectiveGrades(selectedKlausur.grades).reduce((sum, g) => sum + (g.ects ?? 0), 0) > 0 && (
+                  {selectedKlausur.ects != null && selectedKlausur.ects > 0 && (
                     <Badge variant="secondary">
-                      {getEffectiveGrades(selectedKlausur.grades).reduce((sum, g) => sum + (g.ects ?? 0), 0)} ECTS
+                      {selectedKlausur.ects} ECTS
                     </Badge>
                   )}
                 </div>

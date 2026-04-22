@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server"
 import {
   calculateKlausurAverage,
   formatGrade,
-  getEffectiveGrades,
   getGradeLabel,
 } from "@/lib/utils/grade-calculations"
 import { getGradeColor } from "@/lib/utils/grade-colors"
@@ -60,9 +59,9 @@ export default async function KlausurDetailPage({ params }: Props) {
           <h1 className="text-2xl font-bold">{klausur.name}</h1>
           <div className="flex gap-2 mt-2">
             <Badge variant="outline">Semester {klausur.semester ?? "–"}</Badge>
-            {getEffectiveGrades(grades).reduce((sum, g) => sum + (g.ects ?? 0), 0) > 0 && (
+            {klausur.ects != null && klausur.ects > 0 && (
               <Badge variant="secondary">
-                {getEffectiveGrades(grades).reduce((sum, g) => sum + (g.ects ?? 0), 0)} ECTS
+                {klausur.ects} ECTS
               </Badge>
             )}
           </div>

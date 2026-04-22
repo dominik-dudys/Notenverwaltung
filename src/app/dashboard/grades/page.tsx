@@ -40,7 +40,14 @@ export default async function GradesPage() {
 
   const allGrades = klausuren.flatMap((k) => k.grades)
   const weightedAverage = calculateWeightedAverage(klausuren)
-  const totalEcts = klausuren.flatMap((k) => getEffectiveGrades(k.grades)).reduce((sum, g) => sum + (g.ects ?? 0), 0)
+  const totalEcts = klausuren.reduce((sum, k) => {
+    if (k.ects == null) return sum
+    const effective = k.grades.some((g) => g.is_retake)
+      ? k.grades.filter((g) => g.is_retake)
+      : k.grades
+    const hasPassing = effective.some((g) => g.grade === 0 || g.grade <= 4.0)
+    return hasPassing ? sum + k.ects : sum
+  }, 0)
   const semesters = groupBySemester(klausuren)
 
   return (
