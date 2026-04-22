@@ -1,6 +1,6 @@
 export function getGradeColor(grade: number | null): string {
   if (grade === null) return "text-muted-foreground"
-  if (grade <= 1.5) return "text-green-600"
+  if (grade <= 1.7) return "text-green-600"
   if (grade <= 2.5) return "text-blue-600"
   if (grade <= 3.5) return "text-yellow-600"
   if (grade <= 4.0) return "text-orange-600"
