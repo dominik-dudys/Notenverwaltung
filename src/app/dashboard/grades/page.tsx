@@ -16,7 +16,7 @@ export default async function GradesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: allKlausuren }, { data: userGrades }] = await Promise.all([
+  const [{ data: allKlausuren }, { data: userGrades }, { data: profile }] = await Promise.all([
     supabase
       .from("modules")
       .select("*")
@@ -26,9 +26,21 @@ export default async function GradesPage() {
       .from("grades")
       .select("*")
       .eq("user_id", user!.id),
+    supabase
+      .from("profiles")
+      .select("vertiefung")
+      .eq("id", user!.id)
+      .single(),
   ])
 
-  const klausuren: KlausurWithStats[] = (allKlausuren ?? []).map((m) => {
+  const userVertiefung = profile?.vertiefung ?? null
+  const filteredKlausuren = (allKlausuren ?? []).filter((m) => {
+    if (!m.vertiefung) return true
+    if (!userVertiefung) return true
+    return m.vertiefung === userVertiefung
+  })
+
+  const klausuren: KlausurWithStats[] = filteredKlausuren.map((m) => {
     const grades = (userGrades ?? []).filter((g) => g.module_id === m.id)
     return {
       ...m,
@@ -55,11 +67,13 @@ export default async function GradesPage() {
         <div>
           <h1 className="text-2xl font-bold">Noten</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Übersicht deiner Klausuren und Noten
+            {userVertiefung
+              ? `Vertiefung: ${userVertiefung}`
+              : "Übersicht deiner Klausuren und Noten"}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <GradeImportDialog klausuren={allKlausuren ?? []} />
+          <GradeImportDialog klausuren={filteredKlausuren} />
           <Button asChild variant="outline" size="sm">
             <Link href="/dashboard/grades/list">Alle Noten</Link>
           </Button>

@@ -78,6 +78,7 @@ export type Database = {
           semester_id: string | null
           subject_id: string | null
           user_id: string | null
+          vertiefung: string | null
         }
         Insert: {
           created_at?: string | null
@@ -88,6 +89,7 @@ export type Database = {
           semester_id?: string | null
           subject_id?: string | null
           user_id?: string | null
+          vertiefung?: string | null
         }
         Update: {
           created_at?: string | null
@@ -98,6 +100,7 @@ export type Database = {
           semester_id?: string | null
           subject_id?: string | null
           user_id?: string | null
+          vertiefung?: string | null
         }
         Relationships: [
           {
@@ -125,6 +128,7 @@ export type Database = {
           last_name: string | null
           role: string
           study_program: string | null
+          vertiefung: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -134,6 +138,7 @@ export type Database = {
           last_name?: string | null
           role?: string
           study_program?: string | null
+          vertiefung?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -143,6 +148,7 @@ export type Database = {
           last_name?: string | null
           role?: string
           study_program?: string | null
+          vertiefung?: string | null
         }
         Relationships: []
       }

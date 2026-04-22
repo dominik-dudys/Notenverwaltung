@@ -23,7 +23,7 @@ export default async function ProfilePage() {
   const [{ data: profile }, { data: stats }, { data: modules }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("role, first_name, last_name, study_program, avatar_url")
+      .select("role, first_name, last_name, study_program, vertiefung, avatar_url")
       .eq("id", user.id)
       .single(),
     supabase.from("overall_average").select("*").single(),
@@ -69,6 +69,7 @@ export default async function ProfilePage() {
               first_name: profile?.first_name ?? null,
               last_name: profile?.last_name ?? null,
               study_program: profile?.study_program ?? null,
+              vertiefung: profile?.vertiefung ?? null,
             }}
           />
         </div>
