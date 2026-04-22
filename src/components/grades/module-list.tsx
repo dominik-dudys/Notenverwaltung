@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Grade, KlausurWithStats, SemesterStats } from "@/types"
-import { formatGrade, getEffectiveGrades } from "@/lib/utils/grade-calculations"
+import { formatGrade } from "@/lib/utils/grade-calculations"
 import { getGradeColor } from "@/lib/utils/grade-colors"
 import { GradeFormDialog } from "@/components/grades/grade-form-dialog"
 import { Button } from "@/components/ui/button"

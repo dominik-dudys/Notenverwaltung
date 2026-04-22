@@ -4,7 +4,6 @@ import { KlausurWithStats } from "@/types"
 import {
   calculateKlausurAverage,
   calculateWeightedAverage,
-  getEffectiveGrades,
   groupBySemester,
 } from "@/lib/utils/grade-calculations"
 import { AverageDisplay } from "@/components/grades/average-display"
