@@ -20,6 +20,7 @@ export function getGradeBadgeVariant(
 
 export function getGradeChartColor(label: string): string {
   const colors: Record<string, string> = {
+    "Bestanden": "#16a34a",
     "Sehr gut": "#16a34a",
     Gut: "#2563eb",
     Befriedigend: "#ca8a04",

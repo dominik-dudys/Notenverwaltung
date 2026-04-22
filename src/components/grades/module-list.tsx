@@ -106,8 +106,8 @@ export function KlausurList({ semesters }: KlausurListProps) {
                                 {kl.name}
                               </button>
                             </td>
-                            <td className={`px-3 py-2.5 text-right font-semibold ${getGradeColor(kl.average)}`}>
-                              {kl.average !== null ? formatGrade(kl.average) : "–"}
+                            <td className={`px-3 py-2.5 text-right font-semibold ${kl.average !== null ? getGradeColor(kl.average) : kl.grades.length > 0 ? "text-green-600" : ""}`}>
+                              {kl.average !== null ? formatGrade(kl.average) : kl.grades.length > 0 ? "BE" : "–"}
                             </td>
                             <td className="px-3 py-2.5 text-right text-muted-foreground hidden sm:table-cell">
                               {ects > 0 ? ects : "–"}
@@ -156,8 +156,8 @@ export function KlausurList({ semesters }: KlausurListProps) {
               </DialogHeader>
 
               <div className="py-2">
-                <div className={`text-4xl font-bold ${getGradeColor(selectedKlausur.average)}`}>
-                  {selectedKlausur.average !== null ? formatGrade(selectedKlausur.average) : "–"}
+                <div className={`text-4xl font-bold ${selectedKlausur.average !== null ? getGradeColor(selectedKlausur.average) : selectedKlausur.grades.length > 0 ? "text-green-600" : ""}`}>
+                  {selectedKlausur.average !== null ? formatGrade(selectedKlausur.average) : selectedKlausur.grades.length > 0 ? "BE" : "–"}
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">Durchschnitt</p>
               </div>

@@ -51,6 +51,7 @@ interface GradeFormDialogProps {
 export function GradeFormDialog({ moduleId, moduleEcts, grade, trigger }: GradeFormDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const router = useRouter()
 
   const form = useForm<FormValues>({
@@ -65,10 +66,11 @@ export function GradeFormDialog({ moduleId, moduleEcts, grade, trigger }: GradeF
 
   async function onSubmit(values: FormValues) {
     setLoading(true)
+    setSaveError(null)
     const supabase = createClient()
 
     if (grade) {
-      await supabase
+      const { error } = await supabase
         .from("grades")
         .update({
           grade: values.grade,
@@ -78,10 +80,15 @@ export function GradeFormDialog({ moduleId, moduleEcts, grade, trigger }: GradeF
           ...(moduleEcts != null && { ects: moduleEcts }),
         })
         .eq("id", grade.id)
+      if (error) {
+        setSaveError(error.message)
+        setLoading(false)
+        return
+      }
     } else {
       const { data: { user } } = await supabase.auth.getUser()
 
-      await supabase.from("grades").insert({
+      const { error } = await supabase.from("grades").insert({
         module_id: moduleId,
         grade: values.grade,
         date: values.date,
@@ -90,6 +97,11 @@ export function GradeFormDialog({ moduleId, moduleEcts, grade, trigger }: GradeF
         user_id: user?.id,
         ...(moduleEcts != null && { ects: moduleEcts }),
       })
+      if (error) {
+        setSaveError(error.message)
+        setLoading(false)
+        return
+      }
     }
 
     setLoading(false)
@@ -195,6 +207,9 @@ export function GradeFormDialog({ moduleId, moduleEcts, grade, trigger }: GradeF
                 </FormItem>
               )}
             />
+            {saveError && (
+              <p className="text-sm text-destructive">{saveError}</p>
+            )}
             <div className="flex justify-between">
               {grade && (
                 <Button
