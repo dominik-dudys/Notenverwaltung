@@ -83,7 +83,7 @@ export function GradesTable({ klausuren }: GradesTableProps) {
                     <TableCell>{entry.ects ?? "–"}</TableCell>
                     <TableCell>
                       <span className={`font-semibold ${getGradeColor(entry.grade)}`}>
-                        {entry.grade.toFixed(1)}
+                        {formatGrade(entry.grade)}
                       </span>
                     </TableCell>
                     <TableCell>{entry.date ?? "–"}</TableCell>
@@ -93,6 +93,7 @@ export function GradesTable({ klausuren }: GradesTableProps) {
                     <TableCell>
                       <GradeFormDialog
                         moduleId={entry.module_id}
+                        moduleEcts={entry.klausur.ects}
                         grade={entry}
                         trigger={
                           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">

@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { createClient } from "@/lib/supabase/client"
-import { STUDY_PROGRAMS } from "@/types"
+import { STUDY_PROGRAMS, VERTIEFUNGEN } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,6 +22,7 @@ const schema = z.object({
   first_name: z.string().max(100).optional().or(z.literal("")),
   last_name: z.string().max(100).optional().or(z.literal("")),
   study_program: z.enum(STUDY_PROGRAMS).optional(),
+  vertiefung: z.enum(VERTIEFUNGEN).optional(),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -32,6 +33,7 @@ interface ProfileFormProps {
     first_name: string | null
     last_name: string | null
     study_program: string | null
+    vertiefung: string | null
   }
 }
 
@@ -53,10 +55,12 @@ export function ProfileForm({ userId, initialValues }: ProfileFormProps) {
       first_name: initialValues.first_name ?? "",
       last_name: initialValues.last_name ?? "",
       study_program: (initialValues.study_program as typeof STUDY_PROGRAMS[number]) ?? undefined,
+      vertiefung: (initialValues.vertiefung as typeof VERTIEFUNGEN[number]) ?? undefined,
     },
   })
 
   const studyProgramValue = watch("study_program")
+  const vertiefungValue = watch("vertiefung")
 
   async function onSubmit(values: FormValues) {
     setSaving(true)
@@ -70,6 +74,7 @@ export function ProfileForm({ userId, initialValues }: ProfileFormProps) {
         first_name: values.first_name || null,
         last_name: values.last_name || null,
         study_program: values.study_program ?? null,
+        vertiefung: values.vertiefung ?? null,
       })
       .eq("id", userId)
 
@@ -122,6 +127,30 @@ export function ProfileForm({ userId, initialValues }: ProfileFormProps) {
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="vertiefung">Vertiefung (ab Semester 4)</Label>
+        <Select
+          value={vertiefungValue ?? ""}
+          onValueChange={(val) =>
+            setValue("vertiefung", val as typeof VERTIEFUNGEN[number])
+          }
+        >
+          <SelectTrigger id="vertiefung">
+            <SelectValue placeholder="Vertiefung wählen" />
+          </SelectTrigger>
+          <SelectContent>
+            {VERTIEFUNGEN.map((v) => (
+              <SelectItem key={v} value={v}>
+                {v}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          In der Notenübersicht werden nur Klausuren deiner Vertiefung angezeigt.
+        </p>
       </div>
 
       <div className="flex items-center gap-3">

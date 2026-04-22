@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server"
 import {
   calculateKlausurAverage,
   formatGrade,
-  getEffectiveGrades,
   getGradeLabel,
 } from "@/lib/utils/grade-calculations"
 import { getGradeColor } from "@/lib/utils/grade-colors"
@@ -31,22 +30,14 @@ export default async function KlausurDetailPage({ params }: Props) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: klausur }, { data: profile }] = await Promise.all([
-    supabase
-      .from("modules")
-      .select("*, grades(*)")
-      .eq("id", moduleId)
-      .eq("user_id", user!.id)
-      .single(),
-    supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user!.id)
-      .single(),
-  ])
+  const { data: klausur } = await supabase
+    .from("modules")
+    .select("*, grades(*)")
+    .eq("id", moduleId)
+    .eq("user_id", user!.id)
+    .single()
 
   if (!klausur) notFound()
-  const isAdmin = profile?.role === "admin"
 
   const grades = (klausur.grades ?? []).sort((a, b) => {
     if (a.is_retake !== b.is_retake) return a.is_retake ? -1 : 1
@@ -68,9 +59,9 @@ export default async function KlausurDetailPage({ params }: Props) {
           <h1 className="text-2xl font-bold">{klausur.name}</h1>
           <div className="flex gap-2 mt-2">
             <Badge variant="outline">Semester {klausur.semester ?? "–"}</Badge>
-            {getEffectiveGrades(grades).reduce((sum, g) => sum + (g.ects ?? 0), 0) > 0 && (
+            {klausur.ects != null && klausur.ects > 0 && (
               <Badge variant="secondary">
-                {getEffectiveGrades(grades).reduce((sum, g) => sum + (g.ects ?? 0), 0)} ECTS
+                {klausur.ects} ECTS
               </Badge>
             )}
           </div>
@@ -82,7 +73,7 @@ export default async function KlausurDetailPage({ params }: Props) {
           />
           <GradeFormDialog
             moduleId={klausur.id}
-            isAdmin={isAdmin}
+            moduleEcts={klausur.ects}
             trigger={<Button size="sm">+ Note hinzufügen</Button>}
           />
         </div>
@@ -142,7 +133,7 @@ export default async function KlausurDetailPage({ params }: Props) {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className={`font-semibold text-lg ${getGradeColor(grade.grade)}`}>
-                          {grade.grade.toFixed(1)}
+                          {formatGrade(grade.grade)}
                         </span>
                         {grade.is_retake && (
                           <Badge className="text-xs bg-amber-500 hover:bg-amber-500 text-white">NKL</Badge>
@@ -157,8 +148,8 @@ export default async function KlausurDetailPage({ params }: Props) {
                     <TableCell>
                       <GradeFormDialog
                         moduleId={klausur.id}
+                        moduleEcts={klausur.ects}
                         grade={grade}
-                        isAdmin={isAdmin}
                         trigger={
                           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
                             ✎

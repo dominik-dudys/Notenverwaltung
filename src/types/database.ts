@@ -71,30 +71,36 @@ export type Database = {
       modules: {
         Row: {
           created_at: string | null
+          ects: number | null
           id: string
           name: string
           semester: number | null
           semester_id: string | null
           subject_id: string | null
           user_id: string | null
+          vertiefung: string | null
         }
         Insert: {
           created_at?: string | null
+          ects?: number | null
           id?: string
           name: string
           semester?: number | null
           semester_id?: string | null
           subject_id?: string | null
           user_id?: string | null
+          vertiefung?: string | null
         }
         Update: {
           created_at?: string | null
+          ects?: number | null
           id?: string
           name?: string
           semester?: number | null
           semester_id?: string | null
           subject_id?: string | null
           user_id?: string | null
+          vertiefung?: string | null
         }
         Relationships: [
           {
@@ -122,6 +128,7 @@ export type Database = {
           last_name: string | null
           role: string
           study_program: string | null
+          vertiefung: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -131,6 +138,7 @@ export type Database = {
           last_name?: string | null
           role?: string
           study_program?: string | null
+          vertiefung?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -140,6 +148,7 @@ export type Database = {
           last_name?: string | null
           role?: string
           study_program?: string | null
+          vertiefung?: string | null
         }
         Relationships: []
       }
@@ -188,6 +197,36 @@ export type Database = {
           id?: string
           name?: string
           sort_order?: number
+        }
+        Relationships: []
+      }
+      timetable_entries: {
+        Row: {
+          created_at: string | null
+          day: string
+          id: string
+          lecturer: string | null
+          room: string | null
+          subject: string
+          time_slot: string
+        }
+        Insert: {
+          created_at?: string | null
+          day: string
+          id?: string
+          lecturer?: string | null
+          room?: string | null
+          subject: string
+          time_slot: string
+        }
+        Update: {
+          created_at?: string | null
+          day?: string
+          id?: string
+          lecturer?: string | null
+          room?: string | null
+          subject?: string
+          time_slot?: string
         }
         Relationships: []
       }
@@ -243,6 +282,7 @@ export type Database = {
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<

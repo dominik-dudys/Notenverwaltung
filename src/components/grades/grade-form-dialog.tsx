@@ -36,7 +36,6 @@ const schema = z.object({
   grade: z.number(),
   date: z.string().min(1, "Datum ist erforderlich"),
   description: z.string().optional(),
-  ects: z.number().int().min(1).max(30).optional(),
   is_retake: z.boolean(),
 })
 
@@ -44,14 +43,15 @@ type FormValues = z.infer<typeof schema>
 
 interface GradeFormDialogProps {
   moduleId: string
+  moduleEcts?: number | null
   grade?: Grade
   trigger?: React.ReactElement
-  isAdmin?: boolean
 }
 
-export function GradeFormDialog({ moduleId, grade, trigger, isAdmin }: GradeFormDialogProps) {
+export function GradeFormDialog({ moduleId, moduleEcts, grade, trigger }: GradeFormDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const router = useRouter()
 
   const form = useForm<FormValues>({
@@ -60,38 +60,48 @@ export function GradeFormDialog({ moduleId, grade, trigger, isAdmin }: GradeForm
       grade: grade?.grade ?? 1.0,
       date: grade?.date ?? new Date().toISOString().split("T")[0],
       description: grade?.description ?? "",
-      ects: grade?.ects ?? undefined,
       is_retake: grade?.is_retake ?? false,
     },
   })
 
   async function onSubmit(values: FormValues) {
     setLoading(true)
+    setSaveError(null)
     const supabase = createClient()
 
     if (grade) {
-      await supabase
+      const { error } = await supabase
         .from("grades")
         .update({
           grade: values.grade,
           date: values.date,
           description: values.description || null,
           is_retake: values.is_retake,
-          ...(isAdmin && values.ects != null && { ects: values.ects }),
+          ...(moduleEcts != null && { ects: moduleEcts }),
         })
         .eq("id", grade.id)
+      if (error) {
+        setSaveError(error.message)
+        setLoading(false)
+        return
+      }
     } else {
       const { data: { user } } = await supabase.auth.getUser()
 
-      await supabase.from("grades").insert({
+      const { error } = await supabase.from("grades").insert({
         module_id: moduleId,
         grade: values.grade,
         date: values.date,
         description: values.description || null,
         is_retake: values.is_retake,
         user_id: user?.id,
-        ...(isAdmin && values.ects != null && { ects: values.ects }),
+        ...(moduleEcts != null && { ects: moduleEcts }),
       })
+      if (error) {
+        setSaveError(error.message)
+        setLoading(false)
+        return
+      }
     }
 
     setLoading(false)
@@ -142,7 +152,7 @@ export function GradeFormDialog({ moduleId, grade, trigger, isAdmin }: GradeForm
                     <SelectContent>
                       {VALID_GRADES.map((g) => (
                         <SelectItem key={g} value={String(g)}>
-                          {g.toFixed(1)}
+                          {g === 0 ? "BE" : g.toFixed(1)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -151,43 +161,19 @@ export function GradeFormDialog({ moduleId, grade, trigger, isAdmin }: GradeForm
                 </FormItem>
               )}
             />
-            <div className={isAdmin ? "grid grid-cols-2 gap-4" : ""}>
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Datum</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {isAdmin && (
-                <FormField
-                  control={form.control}
-                  name="ects"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ECTS</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={30}
-                          {...field}
-                          value={field.value ?? ""}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Datum</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
             <FormField
               control={form.control}
               name="description"
@@ -221,6 +207,9 @@ export function GradeFormDialog({ moduleId, grade, trigger, isAdmin }: GradeForm
                 </FormItem>
               )}
             />
+            {saveError && (
+              <p className="text-sm text-destructive">{saveError}</p>
+            )}
             <div className="flex justify-between">
               {grade && (
                 <Button

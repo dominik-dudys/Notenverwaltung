@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { KlausurWithStats } from "@/types"
-import { calculateKlausurAverage, formatGrade, getEffectiveGrades } from "@/lib/utils/grade-calculations"
+import { calculateKlausurAverage, formatGrade } from "@/lib/utils/grade-calculations"
 import { getGradeColor } from "@/lib/utils/grade-colors"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,10 +10,9 @@ import { KlausurFormDialog } from "./module-form-dialog"
 
 interface KlausurCardProps {
   klausur: KlausurWithStats
-  isAdmin?: boolean
 }
 
-export function KlausurCard({ klausur, isAdmin }: KlausurCardProps) {
+export function KlausurCard({ klausur }: KlausurCardProps) {
   const avg = calculateKlausurAverage(klausur.grades)
 
   return (
@@ -39,9 +38,9 @@ export function KlausurCard({ klausur, isAdmin }: KlausurCardProps) {
         </div>
         <div className="flex gap-2 flex-wrap">
           <Badge variant="outline">Sem. {klausur.semester ?? "–"}</Badge>
-          {getEffectiveGrades(klausur.grades).reduce((sum, g) => sum + (g.ects ?? 0), 0) > 0 && (
+          {klausur.ects != null && klausur.ects > 0 && (
             <Badge variant="secondary">
-              {getEffectiveGrades(klausur.grades).reduce((sum, g) => sum + (g.ects ?? 0), 0)} ECTS
+              {klausur.ects} ECTS
             </Badge>
           )}
         </div>
@@ -59,7 +58,7 @@ export function KlausurCard({ klausur, isAdmin }: KlausurCardProps) {
         <div className="mt-auto">
           <GradeFormDialog
             moduleId={klausur.id}
-            isAdmin={isAdmin}
+            moduleEcts={klausur.ects}
             trigger={
               <Button variant="outline" size="sm" className="w-full">
                 + Note hinzufügen

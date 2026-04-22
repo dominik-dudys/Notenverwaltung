@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { Klausur, Modul } from "@/types"
+import { Klausur, Modul, VERTIEFUNGEN } from "@/types"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -36,6 +36,7 @@ const schema = z.object({
   name: z.string().min(1, "Name ist erforderlich"),
   semester: z.number().int().min(1).max(12),
   subject_id: z.string().optional(),
+  vertiefung: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -58,6 +59,7 @@ export function KlausurFormDialog({ klausur, trigger, isAdmin, module }: Klausur
       name: klausur?.name ?? "",
       semester: klausur?.semester ?? 1,
       subject_id: klausur?.subject_id ?? undefined,
+      vertiefung: klausur?.vertiefung ?? undefined,
     },
   })
 
@@ -69,6 +71,7 @@ export function KlausurFormDialog({ klausur, trigger, isAdmin, module }: Klausur
       name: values.name,
       semester: values.semester,
       ...(isAdmin && { subject_id: values.subject_id || null }),
+      ...(isAdmin && { vertiefung: values.vertiefung || null }),
     }
 
     if (klausur) {
@@ -158,6 +161,36 @@ export function KlausurFormDialog({ klausur, trigger, isAdmin, module }: Klausur
                         {module.map((m) => (
                           <SelectItem key={m.id} value={m.id}>
                             {m.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {isAdmin && (
+              <FormField
+                control={form.control}
+                name="vertiefung"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vertiefung (optional)</FormLabel>
+                    <Select
+                      value={field.value ?? "none"}
+                      onValueChange={(v) => field.onChange(v === "none" ? undefined : v)}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Keine Vertiefung" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">Keine (für alle)</SelectItem>
+                        {VERTIEFUNGEN.map((v) => (
+                          <SelectItem key={v} value={v}>
+                            {v}
                           </SelectItem>
                         ))}
                       </SelectContent>
