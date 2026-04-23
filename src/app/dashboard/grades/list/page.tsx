@@ -9,7 +9,7 @@ export default async function GradesListPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: allKlausuren }, { data: userGrades }, { data: profile }] = await Promise.all([
+  const [{ data: allKlausuren }, { data: userGrades }, { data: profile }, { data: subjects }] = await Promise.all([
     supabase
       .from("modules")
       .select("*")
@@ -23,6 +23,10 @@ export default async function GradesListPage() {
       .select("vertiefung")
       .eq("id", user!.id)
       .single(),
+    supabase
+      .from("subjects")
+      .select("*")
+      .order("sort_order", { ascending: true }),
   ])
 
   const userVertiefung = profile?.vertiefung ?? null
@@ -56,7 +60,7 @@ export default async function GradesListPage() {
       </div>
 
       <div className="rounded-md border">
-        <GradesTable klausuren={klausuren} />
+        <GradesTable klausuren={klausuren} subjects={subjects ?? []} />
       </div>
     </div>
   )

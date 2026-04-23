@@ -1,4 +1,4 @@
-import { Grade, KlausurWithStats, SemesterStats } from "@/types"
+import { Grade, KlausurWithStats, Modul, ModulWithKlausuren, SemesterStats } from "@/types"
 
 // Returns the grades that count for the final result:
 // - If retakes exist, use only retakes
@@ -10,7 +10,7 @@ export function getEffectiveGrades(grades: Grade[]): Grade[] {
 }
 
 // Returns all effective attempts (including Bestanden) to determine if ECTS were earned
-function getEffectiveAttempts(grades: Grade[]): Grade[] {
+export function getEffectiveAttempts(grades: Grade[]): Grade[] {
   const hasRetake = grades.some((g) => g.is_retake)
   return hasRetake ? grades.filter((g) => g.is_retake) : grades
 }
@@ -101,4 +101,57 @@ export function formatGrade(grade: number | null): string {
   if (grade === null) return "–"
   if (grade === 0) return "BE"
   return grade.toFixed(1)
+}
+
+// Gruppiert Klausuren nach ihrem übergeordneten Modul (subject_id).
+// Das Modul gilt als bestanden, wenn der ECTS-gewichtete Durchschnitt aller Klausuren ≤ 4.0 ist.
+// Klausuren ohne subject_id werden in eine Fallback-Gruppe "Einzelne Klausuren" einsortiert.
+export function groupByModul(klausuren: KlausurWithStats[], subjects: Modul[]): ModulWithKlausuren[] {
+  const grouped = new Map<string, KlausurWithStats[]>()
+  const standalone: KlausurWithStats[] = []
+
+  for (const kl of klausuren) {
+    if (kl.subject_id) {
+      if (!grouped.has(kl.subject_id)) grouped.set(kl.subject_id, [])
+      grouped.get(kl.subject_id)!.push(kl)
+    } else {
+      standalone.push(kl)
+    }
+  }
+
+  function buildModulEntry(subject: Modul, kls: KlausurWithStats[]): ModulWithKlausuren {
+    const grade = calculateWeightedAverage(kls)
+    const totalEcts = kls.reduce((sum, k) => sum + (k.ects ?? 0), 0)
+
+    let isPassed: boolean | null = null
+    const klausurenWithGrades = kls.filter((k) => k.grades.length > 0)
+    if (klausurenWithGrades.length > 0) {
+      if (grade !== null) {
+        isPassed = grade <= 4.0
+      } else {
+        // Alle effektiven Noten sind "Bestanden" (grade=0) → Modul bestanden
+        isPassed = true
+      }
+    }
+
+    const earnedEcts = isPassed === true ? totalEcts : 0
+
+    return { ...subject, klausuren: kls, grade, totalEcts, earnedEcts, isPassed }
+  }
+
+  const result: ModulWithKlausuren[] = subjects
+    .filter((s) => grouped.has(s.id))
+    .map((s) => buildModulEntry(s, grouped.get(s.id)!))
+
+  if (standalone.length > 0) {
+    const fallbackSubject: Modul = {
+      id: "__standalone__",
+      name: "Einzelne Klausuren",
+      sort_order: 9999,
+      created_at: null,
+    }
+    result.push(buildModulEntry(fallbackSubject, standalone))
+  }
+
+  return result
 }

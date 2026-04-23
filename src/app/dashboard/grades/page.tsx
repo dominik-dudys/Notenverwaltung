@@ -5,6 +5,7 @@ import {
   calculateKlausurAverage,
   calculateWeightedAverage,
   groupBySemester,
+  groupByModul,
 } from "@/lib/utils/grade-calculations"
 import { AverageDisplay } from "@/components/grades/average-display"
 import { CollapsibleCharts } from "@/components/grades/collapsible-charts"
@@ -16,7 +17,7 @@ export default async function GradesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: allKlausuren }, { data: userGrades }, { data: profile }] = await Promise.all([
+  const [{ data: allKlausuren }, { data: userGrades }, { data: profile }, { data: subjects }] = await Promise.all([
     supabase
       .from("modules")
       .select("*")
@@ -31,6 +32,10 @@ export default async function GradesPage() {
       .select("vertiefung")
       .eq("id", user!.id)
       .single(),
+    supabase
+      .from("subjects")
+      .select("*")
+      .order("sort_order", { ascending: true }),
   ])
 
   const userVertiefung = profile?.vertiefung ?? null
@@ -51,14 +56,8 @@ export default async function GradesPage() {
 
   const allGrades = klausuren.flatMap((k) => k.grades)
   const weightedAverage = calculateWeightedAverage(klausuren)
-  const totalEcts = klausuren.reduce((sum, k) => {
-    if (k.ects == null) return sum
-    const effective = k.grades.some((g) => g.is_retake)
-      ? k.grades.filter((g) => g.is_retake)
-      : k.grades
-    const hasPassing = effective.some((g) => g.grade === 0 || g.grade <= 4.0)
-    return hasPassing ? sum + k.ects : sum
-  }, 0)
+  const moduls = groupByModul(klausuren, subjects ?? [])
+  const totalEcts = moduls.reduce((sum, m) => sum + m.earnedEcts, 0)
   const semesters = groupBySemester(klausuren)
 
   return (
@@ -97,7 +96,7 @@ export default async function GradesPage() {
       ) : (
         <div>
           <h2 className="text-lg font-semibold mb-3">Klausuren</h2>
-          <KlausurList semesters={semesters} />
+          <KlausurList moduls={moduls} />
         </div>
       )}
     </div>

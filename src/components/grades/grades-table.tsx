@@ -1,4 +1,4 @@
-import { KlausurWithStats } from "@/types"
+import { KlausurWithStats, Modul } from "@/types"
 import { calculateWeightedAverage, formatGrade } from "@/lib/utils/grade-calculations"
 import { getGradeColor } from "@/lib/utils/grade-colors"
 import { Badge } from "@/components/ui/badge"
@@ -16,9 +16,11 @@ import {
 
 interface GradesTableProps {
   klausuren: KlausurWithStats[]
+  subjects?: Modul[]
 }
 
-export function GradesTable({ klausuren }: GradesTableProps) {
+export function GradesTable({ klausuren, subjects = [] }: GradesTableProps) {
+  const subjectMap = new Map(subjects.map((s) => [s.id, s.name]))
   const allGradesWithKlausur = klausuren.flatMap((k) =>
     k.grades.map((g) => ({ ...g, klausur: k }))
   )
@@ -47,7 +49,8 @@ export function GradesTable({ klausuren }: GradesTableProps) {
       <TableHeader>
         <TableRow>
           <TableHead>Klausur</TableHead>
-          <TableHead>Klausur</TableHead>
+          <TableHead>Prüfung</TableHead>
+          <TableHead>Modul</TableHead>
           <TableHead>Semester</TableHead>
           <TableHead>ECTS</TableHead>
           <TableHead>Note</TableHead>
@@ -77,6 +80,11 @@ export function GradesTable({ klausuren }: GradesTableProps) {
                     <TableCell className="text-muted-foreground text-sm">
                       {entry.exam_name ?? "–"}
                     </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {entry.klausur.subject_id
+                        ? (subjectMap.get(entry.klausur.subject_id) ?? "–")
+                        : "–"}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline">Sem. {semester || "–"}</Badge>
                     </TableCell>
@@ -105,7 +113,7 @@ export function GradesTable({ klausuren }: GradesTableProps) {
                   </TableRow>
                 ))}
               <TableRow className="bg-muted/50 font-medium">
-                <TableCell colSpan={4}>
+                <TableCell colSpan={5}>
                   Ø Semester {semester || "–"}
                 </TableCell>
                 <TableCell>
@@ -121,7 +129,7 @@ export function GradesTable({ klausuren }: GradesTableProps) {
       </TableBody>
       <TableFooter>
         <TableRow>
-          <TableCell colSpan={4} className="font-bold">
+          <TableCell colSpan={5} className="font-bold">
             Gewichteter Gesamtdurchschnitt
           </TableCell>
           <TableCell className={`font-bold ${getGradeColor(weightedAverage)}`}>

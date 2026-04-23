@@ -31,3 +31,11 @@ export interface SemesterStats {
   weightedAverage: number | null
   totalEcts: number
 }
+
+export interface ModulWithKlausuren extends Modul {
+  klausuren: KlausurWithStats[]
+  grade: number | null      // ECTS-gewichteter Durchschnitt aller Klausuren im Modul
+  totalEcts: number         // Summe ECTS aller Klausuren im Modul
+  earnedEcts: number        // Verdiente ECTS: totalEcts wenn Modul bestanden, sonst 0
+  isPassed: boolean | null  // null = noch keine Noten eingetragen
+}
