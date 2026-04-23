@@ -25,7 +25,7 @@ function ChevronIcon({ open }: { open: boolean }) {
 }
 
 export function CollapsibleCharts({ grades, semesters }: CollapsibleChartsProps) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
 
   return (
     <div className="rounded-lg border">

@@ -31,3 +31,4 @@ Siehe .env.example
 - Niemals direkt in Produktions-Datenbank schreiben
 - Immer Migrations für Schemaänderungen
 - Prüfe bitte jedes mal, ob es Imports oder Funktionen gibt, die nicht benutzt werden
+- in der Module.md Datei findest du alle wichtigen Informationen rund um die Module. Alles was auf module Referenziert sollst du aus der Datei ziehen
