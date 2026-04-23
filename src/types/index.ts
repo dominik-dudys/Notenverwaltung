@@ -4,6 +4,7 @@ export type Klausur = Tables<"modules">
 export type Grade = Tables<"grades">
 export type Modul = Tables<"subjects">
 export type Profile = Tables<"profiles">
+export type Semester = Tables<"semesters">
 
 export const STUDY_PROGRAMS = ['Wirtschaftsinformatik', 'IT-Security'] as const
 export type StudyProgram = typeof STUDY_PROGRAMS[number]
